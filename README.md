@@ -51,3 +51,5 @@ The configuration file
 * config_blinds_.yaml_
 
 includes groups for each blinds with all the associated variables. Add these configuration file to your group configuration of home-assistant. A new group **config blinds** should be shown afterwards in you home-assisant instance provideing an blinds configuration for each of your blinds.
+![config blinds group](https://github.com/foxcris/appdaemon-blinds-control/blob/development/images/config_blinds_group.PNG "config blinds group")
+![blind configuration parameteters](https://github.com/foxcris/appdaemon-blinds-control/blob/development/images/config_blinds.PNG "blind configuration parameteters")
