@@ -15,7 +15,8 @@ To make it easy for other here you can get my appdaemon modules. The main featur
 ### appdaemon configuration
 Just copy the file
 * BlindsControl.py
-to you apps folde rof appaemon and add the following configuration to your apps.yaml
+
+to your apps folder of appaemon and add the following configuration to your apps.yaml
 `GlobalBlindsControl:
   module:                   BlindsControl
   class:                    GlobalBlindsControl
