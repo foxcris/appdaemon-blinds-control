@@ -3,7 +3,7 @@
 As I startet with home automation one of the first things i wanted to automate was the blinds control.
 Including the the blinds with home-assitant was easy (i used zwave controllers). I was instantly able to close an open the blinds via the web frintend. However my goal was the complete automated control thus i check how i could achieve that. I first tried ti use the buildin automation module. Automation was possible but is was not the right solution for me. I then search for a way to use normal python to code my automation and found appdaemon. Thus i wrote some appdaemon modules to control my blinds.
 
-To make it easy for other here you can get my appdaemon modules. THe main features are:
+To make it easy for other here you can get my appdaemon modules. The main features are:
 * Blinds are automatically detected and an example configuration is created to include into your home-assistant configuration
 * Each blind can be configured differently
 * Blinds can be controlled accroding to sunset or based an defined time
@@ -15,7 +15,8 @@ To make it easy for other here you can get my appdaemon modules. THe main featur
 ### appdaemon configuration
 Just copy the file
 * BlindsControl.py
-to you apps folde rof appaemon and add the following configuration to your apps.yaml
+
+to your apps folder of appaemon and add the following configuration to your apps.yaml
 `GlobalBlindsControl:
   module:                   BlindsControl
   class:                    GlobalBlindsControl
