@@ -417,7 +417,7 @@ class BlindsControl(hass.Hass):
                 self._get_variable(entityid, "coverID")), self.get_state(self._get_variable(entityid, "coverID"), attribute="current_position")),prefix=entityid)
             self._log_debug("use_pd_on_close %s" % self.get_state(
                 "input_boolean.control_blinds_%s_use_pd_on_close" % entityid),prefix=entityid)
-            if not self.get_state("input_boolean.control_blinds_%s_use_pd_on_close" % entityid)=="on" or (self.get_state("input_boolean.control_blinds_%s_use_pd_on_close" % entityid)=="on" and not self.anyone_home()):
+            if not self.get_state("input_boolean.control_blinds_enable_pd_global")=="on" and (not self.get_state("input_boolean.control_blinds_%s_use_pd_on_close" % entityid)=="on" or (self.get_state("input_boolean.control_blinds_%s_use_pd_on_close" % entityid)=="on" and not self.anyone_home())):
                 if self.get_state(self._get_variable(entityid, "coverID"), attribute="current_position") > 0:
                     self._log("close cover %s" %
                               self._get_variable(entityid, "coverID"),prefix=entityid)
