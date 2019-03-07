@@ -5,9 +5,6 @@ import re
 
 class BaseClass(hass.Hass):
 
-    #def __init__(self):
-    #    hass.Hass.__init__(self)
-
     def _log(self, msg, prefix=None):
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
@@ -66,13 +63,12 @@ class BaseClass(hass.Hass):
 
     def _anyone_home(self, regex='^person.*'):
         statedict = self.get_state()
-        anyonehome=False
-        changeduration = 10
+        anyonehome = False
         for entity in statedict:
             if re.match(regex, entity, re.IGNORECASE):
                 id = self._getid(statedict, entity)
                 state = self.get_state(entity)
                 self._log_debug("Person %s is %s" % (id, state))
-                if state=="home":
-                    anyonehome=True
+                if state == "home":
+                    anyonehome = True
         return anyonehome
