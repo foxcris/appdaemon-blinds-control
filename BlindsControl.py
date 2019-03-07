@@ -66,9 +66,10 @@ class BlindsControl(BaseClass):
                             "input_boolean.control_blinds_enable_global")),
                         prefix=id)
                     if (self.get_state(
-                            "input_boolean.control_blinds_%s_openblinds" % id) == "on"
-                        and self.get_state(
-                            "input_boolean.control_blinds_enable_global") == "on"):
+                            "input_boolean.control_blinds_%s_openblinds" % id)
+                        == "on" and self.get_state(
+                            "input_boolean.control_blinds_enable_global")
+                            == "on"):
                         ob_handle = self.run_at(
                             self._choose_open_blinds_method,
                             datetime.now() + timedelta(seconds=5), entityid=id)
@@ -90,7 +91,7 @@ class BlindsControl(BaseClass):
                         "input_boolean.control_blinds_%s_closeblinds" % id)
                         == "on" and self.get_state(
                             "input_boolean.control_blinds_enable_global"
-                            ) == "on"):
+                    ) == "on"):
                         cb_handle = self.run_at(
                             self._choose_close_blinds_method,
                             datetime.now() + timedelta(seconds=5), entityid=id)
@@ -100,26 +101,28 @@ class BlindsControl(BaseClass):
                     obcd_handle = None
                     cbcd_handle = None
                     self._log_debug(
-                        "input_boolean.control_blinds_%s_cooldown_during_night:\
-                         %s" % (id, self.get_state(
-                            "input_boolean.control_blinds_%s_cooldown_during_night"
-                            % id)), prefix=id)
+                        "input_boolean.control_blinds_{}_cooldown_during_"
+                        "night: {}".format(id, self.get_state(
+                            "input_boolean.control_blinds_%s_cooldown_during_"
+                            "night" % id)), prefix=id)
                     self._log_debug(
                         "input_boolean.control_blinds_enable_global: %s" % (
                             self.get_state(
                                 "input_boolean.control_blinds_enable_global")),
                         prefix=id)
                     self._log_debug(
-                        "input_boolean.control_blinds_enable_cooldown_during_night_global: %s" % (
-                            self.get_state(
-                                "input_boolean.control_blinds_enable_cooldown_during_night_global")),
+                        "input_boolean.control_blinds_enable_cooldown_during_"
+                        "night_global: %s" % (self.get_state(
+                            "input_boolean.control_blinds_enable_cooldown_"
+                            "during_night_global")),
                         prefix=id)
                     if (self.get_state(
-                            "input_boolean.control_blinds_%s_cooldown_during_night" % id)
-                        == "on" and self.get_state(
-                            "input_boolean.control_blinds_enable_global") == "on"
-                        and self.get_state(
-                            "input_boolean.control_blinds_enable_cooldown_during_night_global") == "on"):
+                            "input_boolean.control_blinds_%s_cooldown_during_"
+                            "night" % id) == "on" and self.get_state(
+                            "input_boolean.control_blinds_enable_global")
+                            == "on" and self.get_state(
+                            "input_boolean.control_blinds_enable_cooldown_"
+                            "during_night_global") == "on"):
                         obcd_handle = self.run_at(
                             self._open_blinds_cooldown,
                             datetime.now() + timedelta(seconds=5), entityid=id)
@@ -183,7 +186,7 @@ class BlindsControl(BaseClass):
                 ob_handle = None
             if (self.get_state(
                 "input_boolean.control_blinds_%s_openblinds" % entityid
-                ) == "on"
+            ) == "on"
                 and self.get_state(
                     "input_boolean.control_blinds_enable_global") == "on"):
                 ob_handle = self.run_at(
@@ -195,8 +198,8 @@ class BlindsControl(BaseClass):
                     (Open Blinds: %s, Control Blinds Global: %s)" %
                     (self.get_state(
                         "input_boolean.control_blinds_%s_openblinds" % entityid
-                        ), self.get_state(
-                            "input_boolean.control_blinds_enable_global")),
+                    ), self.get_state(
+                        "input_boolean.control_blinds_enable_global")),
                     prefix=entityid)
             self._set_handle(entityid, "ob_handle", ob_handle)
 
@@ -207,7 +210,7 @@ class BlindsControl(BaseClass):
                 cb_handle = None
             if (self.get_state(
                 "input_boolean.control_blinds_%s_closeblinds" % entityid
-                ) == "on"
+            ) == "on"
                 and self.get_state(
                     "input_boolean.control_blinds_enable_global") == "on"):
                 cb_handle = self.run_at(
@@ -239,8 +242,8 @@ class BlindsControl(BaseClass):
                 and self.get_state(
                     "input_boolean.control_blinds_enable_global") == "on"
                 and self.get_state(
-                    "input_boolean.control_blinds_enable_cooldown_during_night_global"
-                    ) == "on"):
+                    "input_boolean.control_blinds_enable_cooldown_"
+                    "during_night_global") == "on"):
                 obcd_handle = self.run_at(
                     self._open_blinds_cooldown,
                     datetime.now() + timedelta(seconds=5), entityid=entityid)
@@ -253,15 +256,17 @@ class BlindsControl(BaseClass):
                     (Cooldown During  Blinds: %s, Control Blinds During Night\
                     Global: %s, Control Blinds Global: %s)" % (
                         self.get_state(
-                            "input_boolean.control_blinds_%s_cooldown_during_night" % id),
+                            "input_boolean.control_blinds_%s_cooldown_"
+                            "during_night" % id),
                         self.get_state(
-                            "input_boolean.control_blinds_enable_cooldown_during_night_global"),
+                            "input_boolean.control_blinds_enable_cooldown_"
+                            "during_night_global"),
                         self.get_state(
                             "input_boolean.control_blinds_enable_global")),
                     prefix=entityid)
             self._set_handle(entityid, "obcd_handle", obcd_handle)
             self._set_handle(entityid, "cbcd_handle", cbcd_handle)
-        except:
+        except Exception:
             entityid = kwargs.get('entityid', None)
             self._log_error(traceback.format_exc(), prefix=entityid)
         finally:
@@ -275,7 +280,7 @@ class BlindsControl(BaseClass):
             self._set_variable(entityid, "time_close_blinds", None)
             if self.get_state(
                 "input_boolean.control_blinds_%s_sunsetsunrise" % entityid
-                    ) == "on":
+            ) == "on":
                 self._log(
                     "control blind according to sunset/sunrise enabled",
                     prefix=entityid)
@@ -284,7 +289,7 @@ class BlindsControl(BaseClass):
                 self._log(
                     "control blind according to time enabled", prefix=entityid)
                 self._close_blinds_time(entityid)
-        except:
+        except Exception:
             entityid = kwargs.get('entityid', None)
             self._log_error(traceback.format_exc(), prefix=entityid)
             nexttrigger = datetime.now() + timedelta(seconds=5)
@@ -309,20 +314,21 @@ class BlindsControl(BaseClass):
             # der aktuellen Zeit für das öffnen der Blinds ist nichts machen.
             # Dann ist die Konfiguration falsch.
             cooldownnightdown = today + timedelta(hours=self.get_state(
-                "input_datetime.control_blinds_%s_cooldown_during_night_close" % entityid,
-                attribute="hour"),
+                "input_datetime.control_blinds_%s_cooldown_during_night_close"
+                % entityid, attribute="hour"),
                 minutes=self.get_state(
-                "input_datetime.control_blinds_%s_cooldown_during_night_close" % entityid,
-                attribute="minute"),
+                "input_datetime.control_blinds_%s_cooldown_during_night_close"
+                % entityid, attribute="minute"),
                 seconds=self.get_state(
-                    "input_datetime.control_blinds_%s_cooldown_during_night_close" % entityid,
-                attribute="second"))
+                "input_datetime.control_blinds_%s_cooldown_during_night_close"
+                % entityid, attribute="second"))
             # wenn die Stunde zwischen 12 und 24 Uhr lieg muss kein Tag drauf\
             # adiert werden. Ansonsten gehe ich davon aus, dass die Urhzeit
             # sich auf den nächsten Tag bezieht
-            if self.get_state(
-                "input_datetime.control_blinds_%s_cooldown_during_night_close" % entityid,
-                    attribute="hour") < 12 and datetime.now().hour >= 12:
+            if (self.get_state(
+                "input_datetime.control_blinds_%s_cooldown_during_night_close"
+                % entityid, attribute="hour") < 12
+                    and datetime.now().hour >= 12):
                 cooldownnightdown += timedelta(days=1)
             self._log("close_blinds_cooldown: cooldownnightdown: %s" %
                       cooldownnightdown, prefix=entityid)
@@ -337,11 +343,12 @@ class BlindsControl(BaseClass):
                     today + timedelta(days=1, minutes=5),
                     entityid=entityid))
             else:
-                if self.get_state(
-                    "input_boolean.control_blinds_%s_openblinds" % entityid) == "on" and (self._get_variable(
-                    entityid, "time_open_blinds"
+                if (self.get_state(
+                    "input_boolean.control_blinds_%s_openblinds" % entityid)
+                    == "on" and (self._get_variable(
+                        entityid, "time_open_blinds"
                     ) is None
-                     or cooldownnightdown > self.time_open_blinds):
+                        or cooldownnightdown > self.time_open_blinds)):
                     # Entweder ist die Konfiguration kaputt oder wir haben noch
                     # die alte Zeit vom Vortag
                     self._log(
@@ -369,7 +376,7 @@ class BlindsControl(BaseClass):
                         self._close_blinds_cooldown_,
                         cooldownnightdown,
                         entityid=entityid))
-        except:
+        except Exception:
             entityid = kwargs.get('entityid', None)
             self._log_error(traceback.format_exc(), prefix=entityid)
             nexttrigger = datetime.now() + timedelta(seconds=5)
@@ -392,7 +399,7 @@ class BlindsControl(BaseClass):
             # Entscheiden welcher Modus aktuell aktiviert ist
             if self.get_state(
                     "input_boolean.control_blinds_%s_sunsetsunrise" % entityid
-                    ) == "on":
+            ) == "on":
                 self._log(
                     "control blind according to sunset/sunrise enabled",
                     prefix=entityid)
@@ -402,7 +409,7 @@ class BlindsControl(BaseClass):
                     "control blind according to time enabled",
                     prefix=entityid)
                 self._open_blinds_time(entityid)
-        except:
+        except Exception:
             entityid = kwargs.get('entityid', None)
             self._log_error(traceback.format_exc(), prefix=entityid)
             nexttrigger = datetime.now() + timedelta(seconds=5)
@@ -428,17 +435,21 @@ class BlindsControl(BaseClass):
             # Dann ist die Konfiguration falsch.
             cooldownnightup = today + timedelta(
                 hours=self.get_state(
-                    "input_datetime.control_blinds_%s_cooldown_during_night_open" % entityid,
-                    attribute="hour"),
+                    "input_datetime.control_blinds_%s_cooldown_during_"
+                    "night_open" % entityid, attribute="hour"),
                 minutes=self.get_state(
-                    "input_datetime.control_blinds_%s_cooldown_during_night_open" % entityid,
-                    attribute="minute"),
+                    "input_datetime.control_blinds_%s_cooldown_during_"
+                    "night_open" % entityid, attribute="minute"),
                 seconds=self.get_state(
-                    "input_datetime.control_blinds_%s_cooldown_during_night_open" % entityid,
-                    attribute="second"))
+                    "input_datetime.control_blinds_%s_cooldown_during_"
+                    "night_open" % entityid, attribute="second"))
             # wenn die Stunde zwischen 12 und 24 Uhr lieg muss kein Tag drauf
-            # adiert werden. Ansonsten gehe ich davon aus, dass die Urhzeit sich auf den nächsten Tag bezieht
-            if self.get_state("input_datetime.control_blinds_%s_cooldown_during_night_open" % entityid, attribute="hour") < 12 and datetime.now().hour >= 12:
+            # adiert werden. Ansonsten gehe ich davon aus, dass die Urhzeit
+            # sich auf den nächsten Tag bezieht
+            if (self.get_state("input_datetime.control_blinds_%s_cooldown_"
+                               "during_night_open" % entityid,
+                               attribute="hour") < 12
+                    and datetime.now().hour >= 12):
                 cooldownnightup += timedelta(days=1)
             self._log("open_blinds_cooldown: cooldownnightup: %s" %
                       cooldownnightup, prefix=entityid)
@@ -453,7 +464,12 @@ class BlindsControl(BaseClass):
                     today + timedelta(days=1, minutes=5),
                     entityid=entityid))
             else:
-                if self.get_state("input_boolean.control_blinds_%s_closeblinds" % entityid) == "on" and (self._get_variable(entityid, "time_close_blinds") is None or cooldownnightup < self._get_variable(entityid, "time_close_blinds")):
+                if (self.get_state(
+                    "input_boolean.control_blinds_%s_closeblinds" % entityid)
+                    == "on" and (self._get_variable(
+                        entityid, "time_close_blinds")
+                    is None or cooldownnightup < self._get_variable(
+                        entityid, "time_close_blinds"))):
                     # entweder die Konfiguration ist kaputt oder aktuell haben
                     # wir noch die alte Zeit vom Vortag.
                     # wir machen nichts und prüfen starten in 5 min neu
@@ -478,7 +494,7 @@ class BlindsControl(BaseClass):
                         self._open_blinds_cooldown,
                         cooldownnightup,
                         entityid=entityid))
-        except:
+        except Exception:
             entityid = kwargs.get('entityid', None)
             self._log_error(traceback.format_exc(), prefix=entityid)
             nexttrigger = datetime.now() + timedelta(seconds=5)
@@ -494,14 +510,14 @@ class BlindsControl(BaseClass):
     def _close_blinds_sun(self, entityid):
         sunset_offset = timedelta(
             hours=self.get_state(
-                "input_datetime.control_blinds_%s_offset_blinds_down_after_sunset" % entityid,
-                attribute="hour"),
+                "input_datetime.control_blinds_%s_offset_blinds_down_after"
+                "_sunset" % entityid, attribute="hour"),
             minutes=self.get_state(
-                "input_datetime.control_blinds_%s_offset_blinds_down_after_sunset" % entityid,
-                attribute="minute"),
+                "input_datetime.control_blinds_%s_offset_blinds_down_after_"
+                "sunset" % entityid, attribute="minute"),
             seconds=self.get_state(
-                "input_datetime.control_blinds_%s_offset_blinds_down_after_sunset" % entityid,
-                attribute="second"))
+                "input_datetime.control_blinds_%s_offset_blinds_down_after_"
+                "sunset" % entityid, attribute="second"))
         sunset = self.sunset()
         sunsetday = sunset.replace(
             hour=0, minute=0, second=0, microsecond=0)
@@ -634,12 +650,17 @@ class BlindsControl(BaseClass):
                     self._get_variable(
                         entityid, "coverID"),
                     attribute="current_position")),
-                            prefix=entityid)
+                prefix=entityid)
             self._log_debug("use_pd_on_close %s" % self.get_state(
                 "input_boolean.control_blinds_%s_use_pd_on_close" % entityid),
-                            prefix=entityid)
-            if not self.get_state("input_boolean.control_blinds_enable_pd_global") == "on" or not self.get_state("input_boolean.control_blinds_%s_use_pd_on_close" % entityid) == "on"  or not self._anyone_home():
-                if self.get_state(self._get_variable(entityid, "coverID"), attribute="current_position") > 0:
+                prefix=entityid)
+            if (not self.get_state(
+                    "input_boolean.control_blinds_enable_pd_global") == "on"
+                    or not self.get_state(
+                    "input_boolean.control_blinds_%s_use_pd_on_close"
+                    % entityid) == "on" or not self._anyone_home()):
+                if (self.get_state(self._get_variable(entityid, "coverID"),
+                                   attribute="current_position") > 0):
                     self._log("close cover %s" %
                               self._get_variable(entityid, "coverID"),
                               prefix=entityid)
@@ -660,7 +681,7 @@ class BlindsControl(BaseClass):
                 self._choose_close_blinds_method,
                 datetime.now() + timedelta(minutes=5),
                 entityid=entityid))
-        except:
+        except Exception:
             entityid = kwargs.get('entityid', None)
             self._log_error(traceback.format_exc(), prefix=entityid)
             nexttrigger = datetime.now() + timedelta(seconds=5)
@@ -683,7 +704,7 @@ class BlindsControl(BaseClass):
                 self.get_state(
                     self._get_variable(entityid, "coverID"),
                     attribute="current_position")),
-                            prefix=entityid)
+                prefix=entityid)
             if self.get_state(
                 self._get_variable(entityid, "coverID"),
                     attribute="current_position") > 0:
@@ -699,7 +720,7 @@ class BlindsControl(BaseClass):
                 self._close_blinds_cooldown,
                 datetime.now() + timedelta(minutes=5),
                 entityid=entityid))
-        except:
+        except Exception:
             entityid = kwargs.get('entityid', None)
             self._log_error(traceback.format_exc(), prefix=entityid)
             nexttrigger = datetime.now() + timedelta(seconds=5)
@@ -714,8 +735,8 @@ class BlindsControl(BaseClass):
 
     def _open_blinds_sun(self, entityid):
         sunrise_buw_offset_dtime = datetime.strptime("%s" % self.get_state(
-                "input_datetime.control_blinds_%s_offset_blinds_up_weekend" %
-                entityid), "%H:%M:%S")
+            "input_datetime.control_blinds_%s_offset_blinds_up_weekend" %
+            entityid), "%H:%M:%S")
         sunrise_buw_offset = timedelta(hours=sunrise_buw_offset_dtime.hour,
                                        minutes=sunrise_buw_offset_dtime.minute,
                                        seconds=sunrise_buw_offset_dtime.second)
@@ -840,7 +861,7 @@ class BlindsControl(BaseClass):
                 self._get_variable(entityid, "coverID")), self.get_state(
                     self._get_variable(entityid, "coverID"),
                     attribute="current_position")),
-                            prefix=entityid)
+                prefix=entityid)
             if self.get_state(self._get_variable(entityid, "coverID"),
                               attribute="current_position") < 100:
                 self._log("open cover %s" %
@@ -857,7 +878,7 @@ class BlindsControl(BaseClass):
                 self._choose_open_blinds_method,
                 datetime.now() + timedelta(minutes=5),
                 entityid=entityid))
-        except:
+        except Exception:
             entityid = kwargs.get('entityid', None)
             self._log_error(traceback.format_exc(), prefix=entityid)
             nexttrigger = datetime.now() + timedelta(seconds=5)
@@ -877,10 +898,10 @@ class BlindsControl(BaseClass):
             self._set_handle(entityid, "obcd_handle", None)
             self._log_debug("_open_blinds_cooldown: Cover State: %s/%s" % (
                 self.get_state(
-                                self._get_variable(entityid, "coverID")),
+                    self._get_variable(entityid, "coverID")),
                 self.get_state(self._get_variable(entityid, "coverID"),
                                attribute="current_position")),
-                            prefix=entityid)
+                prefix=entityid)
             if self.get_state(self._get_variable(entityid, "coverID"),
                               attribute="current_position") < 100:
                 self._log("_open_blinds_cooldown: open cover %s" %
@@ -896,7 +917,7 @@ class BlindsControl(BaseClass):
                 self._open_blinds_cooldown,
                 datetime.now() + timedelta(minutes=5),
                 entityid=entityid))
-        except:
+        except Exception:
             entityid = kwargs.get('entityid', None)
             self._log_error(traceback.format_exc(), prefix=entityid)
             nexttrigger = datetime.now() + timedelta(seconds=5)
@@ -931,8 +952,9 @@ class GlobalBlindsControl(BaseClass):
                 self.call_service("cover/open_cover")
                 self.call_service(
                     "input_boolean/turn_off",
-                    entity_id="input_boolean.control_blinds_open_all_blinds_global")
-        except:
+                    entity_id="input_boolean."
+                    "control_blinds_open_all_blinds_global")
+        except Exception:
             self._log_error(traceback.format_exc())
         finally:
             self._lock.release()
@@ -945,8 +967,9 @@ class GlobalBlindsControl(BaseClass):
                 self.call_service("cover/close_cover")
                 self.call_service(
                     "input_boolean/turn_off",
-                    entity_id="input_boolean.control_blinds_close_all_blinds_global")
-        except:
+                    entity_id="input_boolean."
+                    "control_blinds_close_all_blinds_global")
+        except Exception:
             pass
         finally:
             self._lock.release()
@@ -977,65 +1000,65 @@ class BlindsControlConfiguration(BaseClass):
         "icon": "mdi:timelapse",
         "has_date": False,
         "has_time": True},
-                          "cooldown_during_night_open": {
+        "cooldown_during_night_open": {
         "name": "Time to open blinds during night for cool down",
         "icon": "mdi:clock-outline",
         "has_date": False,
         "has_time": True},
-                          "cooldown_during_night_close": {
+        "cooldown_during_night_close": {
         "name": "Time to close blinds during night for cool down",
         "icon": "mdi:clock-outline",
         "has_date": False,
         "has_time": True},
-                          "earliest_time_blinds_up": {
+        "earliest_time_blinds_up": {
         "name": "Earliest time to open blinds.\
         Delay if sunrise is before this time.",
         "icon": "mdi:clock-outline",
         "has_date": False,
         "has_time": True},
-                         "latest_time_blinds_down": {
+        "latest_time_blinds_down": {
         "name": "Latest time to close blinds. Move close blinds to this time\
         if sunset is after this time.",
         "icon": "mdi:clock-outline",
         "has_date": False,
         "has_time": True},
-                          "offset_blinds_down_after_sunset": {
+        "offset_blinds_down_after_sunset": {
         "name": "Offset to add to sunset time.",
         "icon": "mdi:clock-outline",
         "has_date": False,
         "has_time": True},
-                          "openblinds_on_time": {
+        "openblinds_on_time": {
         "name": "Time to open blinds",
         "icon": "mdi:clock-outline",
         "has_date": False,
         "has_time": True},
-                          "closeblinds_on_time": {
+        "closeblinds_on_time": {
         "name": "Time to close blinds",
         "icon": "mdi:clock-outline",
         "has_date": False,
         "has_time": True}
-                          }
+    }
     variables_number = {"cooldown_night_blinds_position": {
         "name": "Position of blinds during cool down", "min": 0, "max": 100,
         "step": 1, "icon": "mdi:blinds"}}
     variables_boolean_global = {"enable_global": {
         "name": "Enable automatic blinds control",
         "icon": "mdi:blinds"},
-                                "enable_pd_global": {
+        "enable_pd_global": {
         "name": "Control blinds only if nobody is home",
         "icon": "mdi:account-multiple"},
-                                "enable_cooldown_during_night_global": {
+        "enable_cooldown_during_night_global": {
         "name": "Openblinds during night to cool down",
         "icon": "mdi:weather-night"},
-                                "open_all_blinds_global": {
+        "open_all_blinds_global": {
         "name": "Open ALL blinds",
         "icon": "mdi:blinds"},
-                                "close_all_blinds_global": {
+        "close_all_blinds_global": {
         "name": "Close ALL blinds",
         "icon": "mdi:blinds"},
-                                "configuration": {
+        "configuration": {
         "name": "Create new config templates"}
-                                }
+    }
 
     def initialize(self):
         self._lock = Semaphore(1)
