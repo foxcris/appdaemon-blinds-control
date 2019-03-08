@@ -1143,7 +1143,7 @@ class BlindsControlConfiguration(BaseClass):
                              self.variables_boolean_global, False)
         self._writeconfiguration(
             "global", {"input_boolean": self.variables_boolean_global}, False)
-        idlist.append("config_blinds_")
+        idlist.append("global")
         self._writeconfigview(idlist, False)
 
     def _writevariables(self, id, filename, varlist, overwritefiles):
