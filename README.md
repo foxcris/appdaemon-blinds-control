@@ -15,6 +15,7 @@ To make it easy for other here you can get my appdaemon modules. The main featur
 ### appdaemon configuration
 Just copy the file
 * BlindsControl.py
+* Helper.py
 
 to your apps folder of appaemon and add the following configuration to your apps.yaml
 `GlobalBlindsControl:
@@ -32,6 +33,9 @@ BlindsControl:
  class:                     BlindsControl
  debug:                     True
 `
+
+The file Helper.py is also used by one of my [other](https://github.com/foxcris/appdaemon-vacuum-control) appdaemon project. In both projects the same file is used!
+
 ### home-assistant configuration
 If you use the generated configuration you can directly start using automated blinds control. The following files are created:
 * config_blinds.yaml_
