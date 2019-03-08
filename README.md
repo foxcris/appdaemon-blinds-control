@@ -18,7 +18,8 @@ Just copy the file
 * Helper.py
 
 to your apps folder of appaemon and add the following configuration to your apps.yaml
-`GlobalBlindsControl:
+```
+GlobalBlindsControl:
   module:                   BlindsControl
   class:                    GlobalBlindsControl
   debug:                    True
@@ -32,7 +33,7 @@ BlindsControl:
  module:                    BlindsControl
  class:                     BlindsControl
  debug:                     True
-`
+```
 
 The file Helper.py is also used by one of my [other](https://github.com/foxcris/appdaemon-vacuum-control) appdaemon project. In both projects the same file is used!
 
