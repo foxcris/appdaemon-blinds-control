@@ -9,6 +9,6 @@ BlindsConfigConfiguration:
   debug:                    True
 
 BlindsControl:
-  module:                   BlindsControl
-  class:                    BlindsControl
-  debug:                    True
+ module:                    BlindsControl
+ class:                     BlindsControl
+ debug:                     True
