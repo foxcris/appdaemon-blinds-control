@@ -58,7 +58,7 @@ class BaseClass(hass.Hass):
         if id is None:
             # id is still None. We have to clarify where to get the id
             self._log_debug("Could not detect id of the item. Values %s" %
-                            self.statetict.get(entity))
+                            self.get_state(entity, attribute="all"))
         return id
 
     def _anyone_home(self, regex='^person.*'):
