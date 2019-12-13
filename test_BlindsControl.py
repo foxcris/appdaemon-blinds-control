@@ -1223,7 +1223,7 @@ class TestGlobalBlindsControl:
 
         globalblindscontrol._open_blinds(entity, None, "off", "on", 1)
         assert_that(
-            'cover/open_cover').was.called()
+            'cover/open_cover').was.called_with(entity_id="all")
         assert_that(
             'input_boolean/turn_off').was.called_with(entity_id=entity)
 
@@ -1236,6 +1236,6 @@ class TestGlobalBlindsControl:
 
         globalblindscontrol._close_blinds(entity, None, "off", "on", 1)
         assert_that(
-            'cover/close_cover').was.called()
+            'cover/close_cover').was.called_with(entity_id="all")
         assert_that(
             'input_boolean/turn_off').was.called_with(entity_id=entity)

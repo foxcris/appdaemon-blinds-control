@@ -990,7 +990,7 @@ class GlobalBlindsControl(BaseClass):
             self._lock.acquire(True)
             if new == "on":
                 self._log("Opening all blinds!")
-                self.call_service("cover/open_cover")
+                self.call_service("cover/open_cover", entity_id="all")
                 self.call_service(
                     "input_boolean/turn_off",
                     entity_id="input_boolean."
@@ -1005,7 +1005,7 @@ class GlobalBlindsControl(BaseClass):
         try:
             if new == "on":
                 self._log("Closing all blinds!")
-                self.call_service("cover/close_cover")
+                self.call_service("cover/close_cover", entity_id="all")
                 self.call_service(
                     "input_boolean/turn_off",
                     entity_id="input_boolean."
