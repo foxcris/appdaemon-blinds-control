@@ -146,7 +146,7 @@ class BlindsControl(BaseClass):
         # add global config handlers
         handledict = dict()
         for configvar in BlindsControlConfiguration.variables_boolean_global:
-            cvarname = "input_boolean.control_blinds_%s_global" % configvar
+            cvarname = "input_boolean.control_blinds_%s" % configvar
             if self.entity_exists(cvarname):
                 handle = self.listen_state(
                     self._config_change, cvarname, duration=changeduration)
