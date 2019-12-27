@@ -17,7 +17,7 @@ class BlindsControl(BaseClass):
         changeduration = 10
         for entity in statedict:
             if re.match('^cover.*', entity, re.IGNORECASE):
-                self._log(entity)
+                # self._log(entity)
                 # detected cover
                 id_ = self._getid(statedict, entity)
                 self._log(id_)
@@ -58,90 +58,89 @@ class BlindsControl(BaseClass):
                 vardict.update({"coverID": entity})
 
                 # create open blinds handle
-                if len(handledict) > 0:
-                    ob_handle = None
-                    self._log_debug(
-                        "input_boolean.control_blinds_%s_openblinds: %s"
-                        % (id_, self.get_state(
-                            "input_boolean.control_blinds_%s_openblinds"
+                ob_handle = None
+                self._log_debug(
+                    "input_boolean.control_blinds_%s_openblinds: %s"
+                    % (id_, self.get_state(
+                        "input_boolean.control_blinds_%s_openblinds"
+                        % id_)), prefix=id_)
+                self._log_debug(
+                    "input_boolean.control_blinds_enable_global: %s" %
+                    (self.get_state(
+                        "input_boolean.control_blinds_enable_global")),
+                    prefix=id_)
+                if (self.get_state(
+                        "input_boolean.control_blinds_%s_openblinds" % id_)
+                    == "on" and self.get_state(
+                        "input_boolean.control_blinds_enable_global")
+                        == "on"):
+                    ob_handle = self.run_at(
+                        self._choose_open_blinds_method,
+                        datetime.now() + timedelta(seconds=5), entityid=id_)
+                handledict.update({"ob_handle": ob_handle})
+
+                # create close blinds handle
+                cb_handle = None
+                self._log_debug(
+                    "input_boolean.control_blinds_%s_closeblinds: %s" % (
+                        id_, self.get_state(
+                            "input_boolean.control_blinds_%s_closeblinds"
                             % id_)), prefix=id_)
-                    self._log_debug(
-                        "input_boolean.control_blinds_enable_global: %s" %
-                        (self.get_state(
+                self._log_debug(
+                    "input_boolean.control_blinds_enable_global: %s" % (
+                        self.get_state(
                             "input_boolean.control_blinds_enable_global")),
-                        prefix=id_)
-                    if (self.get_state(
-                            "input_boolean.control_blinds_%s_openblinds" % id_)
+                    prefix=id_)
+                if (self.get_state(
+                    "input_boolean.control_blinds_%s_closeblinds" % id_)
+                    == "on" and self.get_state(
+                        "input_boolean.control_blinds_enable_global"
+                ) == "on"):
+                    cb_handle = self.run_at(
+                        self._choose_close_blinds_method,
+                        datetime.now() + timedelta(seconds=5), entityid=id_)
+                handledict.update({"cb_handle": cb_handle})
+
+                # create open/close blinds handle for cooldown
+                obcd_handle = None
+                cbcd_handle = None
+                self._log_debug(
+                    "input_boolean.control_blinds_{}_cooldown_during_"
+                    "night: {}".format(id_, self.get_state(
+                        "input_boolean.control_blinds_%s_cooldown_during_"
+                        "night" % id_)), prefix=id_)
+                self._log_debug(
+                    "input_boolean.control_blinds_enable_global: %s" % (
+                        self.get_state(
+                            "input_boolean.control_blinds_enable_global")),
+                    prefix=id_)
+                self._log_debug(
+                    "input_boolean.control_blinds_enable_cooldown_during_"
+                    "night_global: %s" % (self.get_state(
+                        "input_boolean.control_blinds_enable_cooldown_"
+                        "during_night_global")),
+                    prefix=id_)
+                if (self.get_state(
+                        "input_boolean.control_blinds_%s_cooldown_during_"
+                        "night" % id_) == "on" and self.get_state(
+                        "input_boolean.control_blinds_enable_global")
                         == "on" and self.get_state(
-                            "input_boolean.control_blinds_enable_global")
-                            == "on"):
-                        ob_handle = self.run_at(
-                            self._choose_open_blinds_method,
-                            datetime.now() + timedelta(seconds=5), entityid=id_)
-                    handledict.update({"ob_handle": ob_handle})
+                        "input_boolean.control_blinds_enable_cooldown_"
+                        "during_night_global") == "on"):
+                    obcd_handle = self.run_at(
+                        self._open_blinds_cooldown,
+                        datetime.now() + timedelta(seconds=5), entityid=id_)
+                    cbcd_handle = self.run_at(
+                        self._close_blinds_cooldown,
+                        datetime.now() + timedelta(seconds=5), entityid=id_)
+                handledict.update({"obcd_handle": obcd_handle})
+                handledict.update({"cbcd_handle": cbcd_handle})
 
-                    # create close blinds handle
-                    cb_handle = None
-                    self._log_debug(
-                        "input_boolean.control_blinds_%s_closeblinds: %s" % (
-                            id_, self.get_state(
-                                "input_boolean.control_blinds_%s_closeblinds"
-                                % id_)), prefix=id_)
-                    self._log_debug(
-                        "input_boolean.control_blinds_enable_global: %s" % (
-                            self.get_state(
-                                "input_boolean.control_blinds_enable_global")),
-                        prefix=id_)
-                    if (self.get_state(
-                        "input_boolean.control_blinds_%s_closeblinds" % id_)
-                        == "on" and self.get_state(
-                            "input_boolean.control_blinds_enable_global"
-                    ) == "on"):
-                        cb_handle = self.run_at(
-                            self._choose_close_blinds_method,
-                            datetime.now() + timedelta(seconds=5), entityid=id_)
-                    handledict.update({"cb_handle": cb_handle})
-
-                    # create open/close blinds handle for cooldown
-                    obcd_handle = None
-                    cbcd_handle = None
-                    self._log_debug(
-                        "input_boolean.control_blinds_{}_cooldown_during_"
-                        "night: {}".format(id_, self.get_state(
-                            "input_boolean.control_blinds_%s_cooldown_during_"
-                            "night" % id_)), prefix=id_)
-                    self._log_debug(
-                        "input_boolean.control_blinds_enable_global: %s" % (
-                            self.get_state(
-                                "input_boolean.control_blinds_enable_global")),
-                        prefix=id_)
-                    self._log_debug(
-                        "input_boolean.control_blinds_enable_cooldown_during_"
-                        "night_global: %s" % (self.get_state(
-                            "input_boolean.control_blinds_enable_cooldown_"
-                            "during_night_global")),
-                        prefix=id_)
-                    if (self.get_state(
-                            "input_boolean.control_blinds_%s_cooldown_during_"
-                            "night" % id_) == "on" and self.get_state(
-                            "input_boolean.control_blinds_enable_global")
-                            == "on" and self.get_state(
-                            "input_boolean.control_blinds_enable_cooldown_"
-                            "during_night_global") == "on"):
-                        obcd_handle = self.run_at(
-                            self._open_blinds_cooldown,
-                            datetime.now() + timedelta(seconds=5), entityid=id_)
-                        cbcd_handle = self.run_at(
-                            self._close_blinds_cooldown,
-                            datetime.now() + timedelta(seconds=5), entityid=id_)
-                    handledict.update({"obcd_handle": obcd_handle})
-                    handledict.update({"cbcd_handle": cbcd_handle})
-
-                    d = dict()
-                    d.update({"handledict": handledict})
-                    d.update({"vardict": vardict})
-                    self._coverdict.update({id_: d})
-                    self._log_debug(self._coverdict)
+                d = dict()
+                d.update({"handledict": handledict})
+                d.update({"vardict": vardict})
+                self._coverdict.update({id_: d})
+                self._log_debug(self._coverdict)
 
         # add global config handlers
         handledict = dict()
@@ -149,7 +148,7 @@ class BlindsControl(BaseClass):
             cvarname = "input_boolean.control_blinds_%s" % configvar
             if self.entity_exists(cvarname):
                 handle = self.listen_state(
-                    self._config_change, cvarname, duration=changeduration)
+                    self._config_change_global, cvarname, duration=changeduration)
                 handledict.update({cvarname: handle})
         d = dict()
         d.update({"handledict": handledict})
@@ -182,6 +181,21 @@ class BlindsControl(BaseClass):
         edict.update({"vardict": vardict})
         self._coverdict.update({entityid: edict})
 
+    def _get_coverlist(self):
+        coverlist = list()
+        for k in self._coverdict:
+            if k != "global":
+                coverlist.append(k)
+        return coverlist
+
+    def _config_change_global(self, entity, attribute, old, new, kwargs):
+        #global variable changed
+        require_reset = ["input_boolean.control_blinds_enable_global", "input_boolean.control_blinds_enable_cooldown_during_night_global"]
+        if entity in require_reset:
+            #disable all handles
+            for cover in self._get_coverlist():
+                self._config_change(entity, None, old, new, {'entityid': cover})
+
     def _config_change(self, entity, attribute, old, new, kwargs):
         try:
             self._lock.acquire(True)
@@ -190,6 +204,7 @@ class BlindsControl(BaseClass):
             # cancel and create new open blinds handle
             ob_handle = self._get_handle(entityid, 'ob_handle')
             if ob_handle is not None:
+                self._log("Cancel timer ob_handle")
                 self.cancel_timer(ob_handle)
                 ob_handle = None
             if (self.get_state(
@@ -224,6 +239,7 @@ class BlindsControl(BaseClass):
             # create close blinds handle
             cb_handle = self._get_handle(entityid, 'cb_handle')
             if cb_handle is not None:
+                self._log("Cancel timer cb_handle")
                 self.cancel_timer(cb_handle)
                 cb_handle = None
             if (self.get_state(
@@ -257,9 +273,11 @@ class BlindsControl(BaseClass):
             obcd_handle = self._get_handle(entityid, 'obcd_handle')
             cbcd_handle = self._get_handle(entityid, 'cbcd_handle')
             if obcd_handle is not None:
+                self._log("Cancel timer obcd_handle")
                 self.cancel_timer(obcd_handle)
                 obcd_handle = None
             if cbcd_handle is not None:
+                self._log("Cancel timer cbcd_handle")
                 self.cancel_timer(cbcd_handle)
                 cbcd_handle = None
             self._log("input_boolean.control_blinds_%s_cooldown_during_night" % entityid)

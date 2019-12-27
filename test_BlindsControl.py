@@ -60,7 +60,7 @@ class TestBlindsControl:
     # Test if alle handles are created and all config variables are watched
     @freeze_time("2019-10-16 12:32:02", tz_offset=2)
     def test_initialize(self, given_that, blindscontrol, assert_that, caplog, time_travel):
-        #caplog.set_level(logging.DEBUG)
+        caplog.set_level(logging.DEBUG)
         
         blindscontrolconfig = BlindsControlConfiguration(
             None, BlindsControlConfiguration.__name__, None, None, None, None, None, None)
@@ -99,7 +99,7 @@ class TestBlindsControl:
 
         for varboolglob in blindscontrolconfig.variables_boolean_global:
             assert_that(blindscontrol).listens_to.state(f"input_boolean.control_blinds_{varboolglob}", duration=10) \
-                .with_callback(blindscontrol._config_change)
+                .with_callback(blindscontrol._config_change_global)
 
         #check if handles are created
         for cover in coverlist:
@@ -108,6 +108,57 @@ class TestBlindsControl:
             assert_that(blindscontrol).registered.run_at(datetime.now() + timedelta(seconds=5), entityid=f"{cover}").with_callback(blindscontrol._open_blinds_cooldown)
             assert_that(blindscontrol).registered.run_at(datetime.now() + timedelta(seconds=5), entityid=f"{cover}").with_callback(blindscontrol._close_blinds_cooldown)
         
+    # Cancel all handles
+    # control_blinds_enable_global is off
+    @freeze_time("2019-10-16 12:32:02", tz_offset=2)
+    def test_initialize_control_blinds_enable_global_off(self, given_that, blindscontrol, assert_that, caplog, time_travel):
+        caplog.set_level(logging.DEBUG)
+        blindscontrolconfig = BlindsControlConfiguration(
+            None, BlindsControlConfiguration.__name__, None, None, None, None, None, None)
+        
+        #set inital state of variables
+        coverlist = ['living_room', 'guest_room', 'parents_room', 'kids_room']
+        for cover in coverlist:
+            given_that.state_of(
+                f'input_boolean.control_blinds_{cover}_closeblinds').is_set_to("on")
+            given_that.state_of(
+                f'input_boolean.control_blinds_{cover}_openblinds').is_set_to("on")   
+            given_that.state_of(
+                f'input_boolean.control_blinds_{cover}_cooldown_during_night').is_set_to("on")
+        given_that.state_of(
+            f'input_boolean.control_blinds_enable_cooldown_during_night_global').is_set_to("on") 
+        given_that.state_of(
+            f'input_boolean.control_blinds_enable_global').is_set_to("on")
+
+        blindscontrol.initialize()
+
+        given_that.state_of(
+            f'input_boolean.control_blinds_enable_global').is_set_to("off")
+
+        #copy handledict
+        #coverdict = blindscontrol._coverdict.copy()
+        handlelist = list()
+        for cover in coverlist:
+            handlelist.append(blindscontrol._get_handle(cover, 'cb_handle'))
+            handlelist.append(blindscontrol._get_handle(cover, 'ob_handle'))
+            handlelist.append(blindscontrol._get_handle(cover, 'obcd_handle'))
+            handlelist.append(blindscontrol._get_handle(cover, 'cbcd_handle'))
+            
+        blindscontrol._config_change_global('input_boolean.control_blinds_enable_global', 'state', 'on', 'off', {})
+
+        print(blindscontrol._coverdict)
+        
+        #now we check if all "old" handles have been canceled
+        for handle in handlelist:
+            blindscontrol.cancel_timer.assert_any_call(handle)
+
+        #check if handles are created
+        for cover in coverlist:
+            assert_that(blindscontrol).registered.run_at(datetime.now() + timedelta(seconds=5), entityid=f"{cover}").with_callback(blindscontrol._choose_open_blinds_method)
+            assert_that(blindscontrol).registered.run_at(datetime.now() + timedelta(seconds=5), entityid=f"{cover}").with_callback(blindscontrol._choose_close_blinds_method)
+            assert_that(blindscontrol).registered.run_at(datetime.now() + timedelta(seconds=5), entityid=f"{cover}").with_callback(blindscontrol._open_blinds_cooldown)
+            assert_that(blindscontrol).registered.run_at(datetime.now() + timedelta(seconds=5), entityid=f"{cover}").with_callback(blindscontrol._close_blinds_cooldown)
+    
     # React on Config Change
     # Open Cover
     def test_config_change_control_blinds_global_enabled_open_cover_enabled(self, given_that, blindscontrol, assert_that, caplog, time_travel):
