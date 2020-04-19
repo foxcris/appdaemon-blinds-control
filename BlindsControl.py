@@ -20,7 +20,7 @@ class BlindsControl(BaseClass):
                 # self._log(entity)
                 # detected cover
                 id_ = self._getid(statedict, entity)
-                self._log(id_)
+                self._log_debug(id_)
                 handledict = dict()
                 # create listeners for config changes
                 for configvar in BlindsControlConfiguration.variables_boolean:
@@ -204,7 +204,7 @@ class BlindsControl(BaseClass):
             # cancel and create new open blinds handle
             ob_handle = self._get_handle(entityid, 'ob_handle')
             if ob_handle is not None:
-                self._log("Cancel timer ob_handle")
+                self._log_debug("Cancel timer ob_handle")
                 self.cancel_timer(ob_handle)
                 ob_handle = None
             if (self.get_state(
@@ -212,7 +212,7 @@ class BlindsControl(BaseClass):
             ) == "on"
                 and self.get_state(
                     "input_boolean.control_blinds_enable_global") == "on"):
-                self._log(
+                self._log_info(
                     "Control Blinds global and per cover (open) is enabled\
                     (Open Blinds: %s, Control Blinds Global: %s)" %
                     (self.get_state(
@@ -221,12 +221,12 @@ class BlindsControl(BaseClass):
                         "input_boolean.control_blinds_enable_global")),
                     prefix=entityid)
                 dt=datetime.now() + timedelta(seconds=5)
-                self._log(dt)
+                self._log_debug(dt)
                 ob_handle = self.run_at(
                     self._choose_open_blinds_method,
                     dt, entityid=entityid)
             else:
-                self._log(
+                self._log_info(
                     "Control Blinds global or per cover (open) is disabled\
                     (Open Blinds: %s, Control Blinds Global: %s)" %
                     (self.get_state(
@@ -239,7 +239,7 @@ class BlindsControl(BaseClass):
             # create close blinds handle
             cb_handle = self._get_handle(entityid, 'cb_handle')
             if cb_handle is not None:
-                self._log("Cancel timer cb_handle")
+                self._log_debug("Cancel timer cb_handle")
                 self.cancel_timer(cb_handle)
                 cb_handle = None
             if (self.get_state(
@@ -247,7 +247,7 @@ class BlindsControl(BaseClass):
             ) == "on"
                 and self.get_state(
                     "input_boolean.control_blinds_enable_global") == "on"):
-                self._log(
+                self._log_info(
                     "Control Blinds global and per cover (close) is enabled \
                     (Close Blinds: %s, Control Blinds Global: %s)" %
                     (self.get_state(
@@ -259,7 +259,7 @@ class BlindsControl(BaseClass):
                     self._choose_close_blinds_method,
                     datetime.now() + timedelta(seconds=5), entityid=entityid)
             else:
-                self._log(
+                self._log_info(
                     "Control Blinds global or per cover (close) is disabled \
                     (Close Blinds: %s, Control Blinds Global: %s)" %
                     (self.get_state(
@@ -273,14 +273,14 @@ class BlindsControl(BaseClass):
             obcd_handle = self._get_handle(entityid, 'obcd_handle')
             cbcd_handle = self._get_handle(entityid, 'cbcd_handle')
             if obcd_handle is not None:
-                self._log("Cancel timer obcd_handle")
+                self._log_debug("Cancel timer obcd_handle")
                 self.cancel_timer(obcd_handle)
                 obcd_handle = None
             if cbcd_handle is not None:
-                self._log("Cancel timer cbcd_handle")
+                self._log_debug("Cancel timer cbcd_handle")
                 self.cancel_timer(cbcd_handle)
                 cbcd_handle = None
-            self._log("input_boolean.control_blinds_%s_cooldown_during_night" % entityid)
+            self._log_debug("input_boolean.control_blinds_%s_cooldown_during_night" % entityid)
             if (self.get_state(
                     "input_boolean.control_blinds_%s_cooldown_during_night" %
                     entityid) == "on"
@@ -296,7 +296,7 @@ class BlindsControl(BaseClass):
                     self._close_blinds_cooldown,
                     datetime.now() + timedelta(seconds=5), entityid=entityid)
             else:
-                self._log(
+                self._log_info(
                     "Control Blinds global or per cover is disabled\
                     (Cooldown During  Blinds: %s, Control Blinds During Night\
                     Global: %s, Control Blinds Global: %s)" % (
@@ -326,12 +326,12 @@ class BlindsControl(BaseClass):
             if self.get_state(
                 "input_boolean.control_blinds_%s_sunsetsunrise" % entityid
             ) == "on":
-                self._log(
+                self._log_info(
                     "control blind according to sunset/sunrise enabled",
                     prefix=entityid)
                 self._close_blinds_sun(entityid)
             else:
-                self._log(
+                self._log_info(
                     "control blind according to time enabled", prefix=entityid)
                 self._close_blinds_time(entityid)
         except Exception:
@@ -352,7 +352,7 @@ class BlindsControl(BaseClass):
             self._lock.acquire(True)
             entityid = kwargs.get('entityid', None)
             self._set_handle(entityid, "cbcd_handle", None)
-            self._log("Close Blinds Cooldown", prefix=entityid)
+            self._log_info("Close Blinds Cooldown", prefix=entityid)
             today = datetime.now().replace(
                 hour=0, minute=0, second=0, microsecond=0)
             # Zeit für das schließen der Blinds bestimmen. Wenn die Zeit NACH\
@@ -382,7 +382,7 @@ class BlindsControl(BaseClass):
                       cooldownnightdown, prefix=entityid)
             if cooldownnightdown < datetime.now():
                 # zeit vorbei nichts machen und warten bis zum nächsten Tag
-                self._log(
+                self._log_info(
                     "close_blinds_cooldown: Zeit ist schon vorbei. Warten bis\
                     zum nächsten Tag",
                     prefix=entityid)
@@ -407,7 +407,7 @@ class BlindsControl(BaseClass):
                         ))):
                     # Entweder ist die Konfiguration kaputt oder wir haben noch
                     # die alte Zeit zum Öffnen vom Vortag
-                    self._log(
+                    self._log_info(
                         "close_blinds_cooldown: \
                         cooldownnightdown>time_open_blinds \
                         check again in 5 minutes",
@@ -424,7 +424,7 @@ class BlindsControl(BaseClass):
                         datetime.now() + timedelta(minutes=5),
                         entityid=entityid))
                 else:
-                    self._log("close_blinds_cooldown: Trigger\
+                    self._log_info("close_blinds_cooldown: Trigger\
                               cooldownnightdown: %s" %
                               cooldownnightdown,
                               prefix=entityid)
@@ -456,12 +456,12 @@ class BlindsControl(BaseClass):
             if self.get_state(
                     "input_boolean.control_blinds_%s_sunsetsunrise" % entityid
             ) == "on":
-                self._log(
+                self._log_info(
                     "control blind according to sunset/sunrise enabled",
                     prefix=entityid)
                 self._open_blinds_sun(entityid)
             else:
-                self._log(
+                self._log_info(
                     "control blind according to time enabled",
                     prefix=entityid)
                 self._open_blinds_time(entityid)
@@ -512,7 +512,7 @@ class BlindsControl(BaseClass):
             self._log_debug("now: %s" % datetime.now())
             if cooldownnightup < datetime.now():
                 # Zeit ist schon vorbei, warten bis zum nächsten Tag
-                self._log(
+                self._log_info(
                     "open_blinds_cooldown: Zeit ist schon vorbei.\
                     Warten bis zum nächsten Tag",
                     prefix=entityid)
@@ -530,7 +530,7 @@ class BlindsControl(BaseClass):
                     # entweder die Konfiguration ist kaputt oder aktuell haben
                     # wir noch die alte time_close_blinds Zeit vom Vortag.
                     # wir machen nichts und prüfen starten in 5 min neu
-                    self._log(
+                    self._log_info(
                         "open_blinds_cooldown: cooldownnightup<\
                         time_close_blinds. check again in 5 minutes",
                         prefix=entityid)
@@ -545,7 +545,7 @@ class BlindsControl(BaseClass):
                         datetime.now() + timedelta(minutes=5),
                         entityid=entityid))
                 else:
-                    self._log("open_blinds_cooldown: Trigger cooldownnightup:\
+                    self._log_info("open_blinds_cooldown: Trigger cooldownnightup:\
                               %s" % cooldownnightup, prefix=entityid)
                     self._set_handle(entityid, "obcd_handle", self.run_at(
                         self._open_blinds_cooldown_,
@@ -620,17 +620,17 @@ class BlindsControl(BaseClass):
                 # Zeit ist schon vorbei. Nichts tun. Warten und neu prüfen,
                 # bis sich sunsettime geändert hat..
                 # Trigger neu starten
-                self._log(
+                self._log_info(
                     "close_blinds_sun: sunsettime has passed, wait till\
                     sunsettime changes", prefix=entityid)
-                self._log("Nextcheck: %s" % (datetime.now() + timedelta(minutes=5)))
+                self._log_debug("Nextcheck: %s" % (datetime.now() + timedelta(minutes=5)))
                 self._set_handle(entityid, "cb_handle", self.run_at(
                     self._choose_close_blinds_method,
                     datetime.now() + timedelta(minutes=5),
                     entityid=entityid))
             else:
                 # sunset time ist in der Zukunft. Trigger zum schließen starten
-                self._log(
+                self._log_info(
                     "close_blinds_sun: sunset is in the future\
                     {}".format(sunsettime),
                     prefix=entityid)
@@ -642,7 +642,7 @@ class BlindsControl(BaseClass):
             # Trigger neu starten
             if sunsetday < today:
                 # hier sollten wir nie landen
-                self._log(
+                self._log_info(
                     "close_blinds_sun: sunsetday<today, check again shortly",
                     prefix=entityid)
                 self._set_handle(entityid, "cb_handle", self.run_at(
@@ -652,7 +652,7 @@ class BlindsControl(BaseClass):
             else:
                 #sunsetday > today
                 nexttrigger = sunsetday + timedelta(minutes=5)
-                self._log(
+                self._log_info(
                     "close_blinds_sun: sunset has passed, wait for next day\
                     %s" % nexttrigger, prefix=entityid)
                 self._set_handle(entityid, "cb_handle", self.run_at(
@@ -681,7 +681,7 @@ class BlindsControl(BaseClass):
         if timedown < datetime.now():
             # Zeit ist schon vorbei. Warten bis zum nächsten Tag.
             # Trigger neu starten
-            self._log(
+            self._log_info(
                 "close_blinds_time: timedown has passed, wait till next day",
                 prefix=entityid)
             self._set_handle(entityid, "cb_handle", self.run_at(
@@ -690,7 +690,7 @@ class BlindsControl(BaseClass):
                 entityid=entityid))
         else:
             # timedown ist in der Zukunft. Trigger zum schließen starten
-            self._log(
+            self._log_info(
                 "close_blinds_time: timedown is in the future %s" % timedown,
                 prefix=entityid)
             self._set_variable(entityid, "time_close_blinds", timedown)
@@ -720,7 +720,7 @@ class BlindsControl(BaseClass):
                     % entityid) == "on" or not self._anyone_home()):
                 if (self.get_state(self._get_variable(entityid, "coverID"),
                                    attribute="current_position") > 0):
-                    self._log("close cover %s" %
+                    self._log_info("close cover %s" %
                               self._get_variable(entityid, "coverID"),
                               prefix=entityid)
                     self.call_service("cover/close_cover",
@@ -729,11 +729,11 @@ class BlindsControl(BaseClass):
             else:
                 # je nach einstellung beachten wir ob jemand zu Hause ist
                 # Es ist jemand zu Hause und wir sollen das beachten
-                self._log(
+                self._log_info(
                     "Do not close blinds while someone is at home",
                     prefix=entityid)
             # Trigger neu starten
-            self._log("nexttrigger %s" %
+            self._log_debug("nexttrigger %s" %
                       (datetime.now() + timedelta(minutes=5)), prefix=entityid)
             self._set_variable(entityid, "time_close_blinds", None)
             self._set_handle(entityid, "cb_handle", self.run_at(
@@ -767,13 +767,13 @@ class BlindsControl(BaseClass):
             if self.get_state(
                 self._get_variable(entityid, "coverID"),
                     attribute="current_position") > 0:
-                self._log("close cover %s" %
+                self._log_info("close cover %s" %
                           self._get_variable(entityid, "coverID"),
                           prefix=entityid)
                 self.call_service("cover/close_cover",
                                   entity_id=self._get_variable(
                                       entityid, "coverID"))
-            self._log("nexttrigger %s" %
+            self._log_debug("nexttrigger %s" %
                       (datetime.now() + timedelta(minutes=5)), prefix=entityid)
             self._set_handle(entityid, "cbcd_handle", self.run_at(
                 self._close_blinds_cooldown,
@@ -841,14 +841,14 @@ class BlindsControl(BaseClass):
                     "New Sunrisetime: %s" % sunrisetime, prefix=entityid)
             if sunrisetime < datetime.now():
                 # Sunrise time ist schon verstrichen, warten und neu pruefen
-                self._log(
+                self._log_info(
                     "sunrise time passed, retry shortly", prefix=entityid)
                 self._set_handle(entityid, "ob_handle", self.run_at(
                     self._choose_open_blinds_method,
                     datetime.now() + timedelta(minutes=5), entityid=entityid))
             else:
                 # sunrise ist in de zukunft. Trigger starten
-                self._log(
+                self._log_info(
                     "sunrise in future at %s" % sunrisetime, prefix=entityid)
                 self._set_variable(entityid, "time_open_blinds", sunrisetime)
                 self._set_handle(entityid, "ob_handle", self.run_at(
@@ -857,7 +857,7 @@ class BlindsControl(BaseClass):
             # sunrise ist am nächsten Tag , warten bis zum nächsten Tag
             if sunriseday < today:
                 # hier sollten wir nie landen
-                self._log(
+                self._log_info(
                     "sunriseday<today, retry shortly", prefix=entityid)
                 self._set_handle(entityid, "ob_handle", self.run_at(
                     self._choose_open_blinds_method,
@@ -866,7 +866,7 @@ class BlindsControl(BaseClass):
                 # wir muessen wegen dem unterschied lokaler Zeit zu
                 # UTC aufpassen
                 nexttrigger = sunriseday + timedelta(minutes=5)
-                self._log(
+                self._log_info(
                     "sunrise has passed wait for next day %s" % nexttrigger,
                     prefix=entityid)
                 self._set_handle(entityid, "ob_handle", self.run_at(
@@ -894,7 +894,7 @@ class BlindsControl(BaseClass):
             # Zeit ist schon vorbei. Nichts tun. Warten bis zum nächsten Tag
             # und neu prüfen.
             # Trigger neu starten
-            self._log(
+            self._log_info(
                 "open_blinds_time: timeup has passed, wait till next day",
                 prefix=entityid)
             self._set_handle(entityid, "ob_handle", self.run_at(
@@ -903,7 +903,7 @@ class BlindsControl(BaseClass):
                 entityid=entityid))
         else:
             # timedown ist in der Zukunft. Trigger zum schließen starten
-            self._log(
+            self._log_info(
                 "open_blinds_time: timeup is in the future %s" % timeup,
                 prefix=entityid)
             self._set_variable(entityid, "time_open_blinds", timeup)
@@ -923,14 +923,14 @@ class BlindsControl(BaseClass):
                 prefix=entityid)
             if self.get_state(self._get_variable(entityid, "coverID"),
                               attribute="current_position") < 100:
-                self._log("open cover %s" %
+                self._log_info("open cover %s" %
                           self._get_variable(entityid, "coverID"),
                           prefix=entityid)
                 self.call_service("cover/open_cover",
                                   entity_id=self._get_variable(
                                       entityid, "coverID"))
             # Trigger neu starten
-            self._log("nexttrigger %s" %
+            self._log_debug("nexttrigger %s" %
                       (datetime.now() + timedelta(minutes=5)), prefix=entityid)
             self._set_variable(entityid, "time_open_blinds", None)
             self._set_handle(entityid, "ob_handle", self.run_at(
@@ -963,14 +963,14 @@ class BlindsControl(BaseClass):
                 prefix=entityid)
             if self.get_state(self._get_variable(entityid, "coverID"),
                               attribute="current_position") < 100:
-                self._log("_open_blinds_cooldown: open cover %s" %
+                self._log_info("_open_blinds_cooldown: open cover %s" %
                           self._get_variable(entityid, "coverID"),
                           prefix=entityid)
                 self.call_service("cover/open_cover",
                                   entity_id=self._get_variable(
                                       entityid, "coverID"))
             # Trigger neu starten
-            self._log("_open_blinds_cooldown: nexttrigger %s" %
+            self._log_info("_open_blinds_cooldown: nexttrigger %s" %
                       (datetime.now() + timedelta(minutes=5)), prefix=entityid)
             self._set_handle(entityid, "obcd_handle", self.run_at(
                 self._open_blinds_cooldown,
@@ -1007,7 +1007,7 @@ class GlobalBlindsControl(BaseClass):
         try:
             self._lock.acquire(True)
             if new == "on":
-                self._log("Opening all blinds!")
+                self._log_info("Opening all blinds!")
                 self.call_service("cover/open_cover", entity_id="all")
                 self.call_service(
                     "input_boolean/turn_off",
@@ -1022,7 +1022,7 @@ class GlobalBlindsControl(BaseClass):
         self._lock.acquire(True)
         try:
             if new == "on":
-                self._log("Closing all blinds!")
+                self._log_info("Closing all blinds!")
                 self.call_service("cover/close_cover", entity_id="all")
                 self.call_service(
                     "input_boolean/turn_off",
@@ -1130,11 +1130,11 @@ class BlindsControlConfiguration(BaseClass):
             # variable does not exit, config is created for the first time
             # start config creation
             if self.args["debug"]:
-                self._log("input_boolean.control_blinds_configuration is None")
+                self._log_debug("input_boolean.control_blinds_configuration is None")
             self.create_config_files()
         else:
             if self.args["debug"]:
-                self._log(
+                self._log_debug(
                     "input_boolean.control_blinds_configuration is not None")
 
     def update_config_files(self, entity, attribute, old, new, duration):
@@ -1147,7 +1147,7 @@ class BlindsControlConfiguration(BaseClass):
             self.create_config_files()
 
     def create_config_files(self):
-        self._log("create_config_files")
+        self._log_info("create_config_files")
         statedict = self.get_state()
         overwritefiles = True
         idlist = list()
@@ -1189,7 +1189,7 @@ class BlindsControlConfiguration(BaseClass):
                 overwritefiles = False
             else:
                 if self.args["debug"]:
-                    self._log("Entity %s does not match." % entity)
+                    self._log_debug("Entity %s does not match." % entity)
 
         # add global variables
         # input_boolean.control_blinds_enable_global
