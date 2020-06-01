@@ -5,7 +5,7 @@ import re
 
 class BaseClass(hass.Hass):
 
-    def _log(self, msg, prefix=None):
+    def _log_info(self, msg, prefix=None):
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
         callername = calframe[1][3]
@@ -32,10 +32,10 @@ class BaseClass(hass.Hass):
         calframe = inspect.getouterframes(curframe, 2)
         callername = calframe[1][3]
         if prefix is not None and prefix != "":
-            self.log("%s: %s: %s: %s" %
+            self.log("ERROR: %s: %s: %s: %s" %
                      (self.__class__.__name__, prefix, callername, msg))
         else:
-            self.log("%s: %s: %s" % (self.__class__.__name__, callername, msg))
+            self.log("ERROR: %s: %s: %s" % (self.__class__.__name__, callername, msg))
 
     def _getattribute(self, statedict, entity, atr):
         return statedict.get(entity).get("attributes").get(atr, None)
@@ -72,3 +72,20 @@ class BaseClass(hass.Hass):
                 if state == "home":
                     anyonehome = True
         return anyonehome
+
+    def import_install_module(self, package):
+        import subprocess
+        import sys
+        import importlib
+        importedmodule = None
+        try:
+            importedmodule = importlib.import_module(package)
+        except ImportError:
+            self._log_debug(sys.executable)
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+            except Exception as e:
+                self._log_error(e)
+        finally:
+            importedmodule = importlib.import_module(package)
+        return importedmodule
