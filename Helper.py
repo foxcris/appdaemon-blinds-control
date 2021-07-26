@@ -47,7 +47,7 @@ class BaseClass(hass.Hass):
             return None
 
     def _getid(self, statedict, entity):
-        idlist = ['friendly_name', 'id', 'value_id']
+        idlist = ['id', 'value_id']
         count = 0
         id = None
         while id is None and count < len(idlist):

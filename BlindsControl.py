@@ -1038,83 +1038,100 @@ class BlindsControlConfiguration(BaseClass):
     variables_boolean = {"use_pd_on_close": {"name":
                                              "Only close blinds automatically\
                                              if nobody is home",
-                                             "icon": "mdi:account-multiple"},
+                                             "icon": "mdi:account-multiple",
+                                             "initialvalue": True },
                          "openblinds": {"name":
                                         "Open blinds automatically",
-                                        "icon": "mdi:blinds"},
+                                        "icon": "mdi:blinds",
+                                        "initialvalue": True},
                          "closeblinds": {"name": "Close blinds automatically",
-                                         "icon": "mdi:blinds"},
+                                         "icon": "mdi:blinds",
+                                         "initialvalue": True},
                          "cooldown_during_night": {"name": "Openblinds during\
                                                    night to cool down",
-                                                   "icon": "mdi:weather-night"
-                                                   },
+                                                   "icon": "mdi:weather-night",
+                                                   "initialvalue": False },
                          "sunsetsunrise": {"name":
                                            "Control blinds according to\
                                            sunrise/sunset",
-                                           "icon": "mdi:white-balance-sunny"
-                                           },
+                                           "icon": "mdi:white-balance-sunny",
+                                           "initialvalue": True },
                          }
     variables_datetime = {"offset_blinds_up_weekend": {
         "name": "Offset for open blinds at Weekends",
         "icon": "mdi:timelapse",
         "has_date": False,
-        "has_time": True},
+        "has_time": True,
+        "initialvalue": "00:00:00"},
         "cooldown_during_night_open": {
         "name": "Time to open blinds during night for cool down",
         "icon": "mdi:clock-outline",
         "has_date": False,
-        "has_time": True},
+        "has_time": True,
+        "initialvalue": "23:00:00"},
         "cooldown_during_night_close": {
         "name": "Time to close blinds during night for cool down",
         "icon": "mdi:clock-outline",
         "has_date": False,
-        "has_time": True},
+        "has_time": True,
+        "initialvalue": "05:00:00"},
         "earliest_time_blinds_up": {
         "name": "Earliest time to open blinds.\
         Delay if sunrise is before this time.",
         "icon": "mdi:clock-outline",
         "has_date": False,
-        "has_time": True},
+        "has_time": True,
+        "initialvalue": "08:00:00"},
         "latest_time_blinds_down": {
         "name": "Latest time to close blinds. Move close blinds to this time\
         if sunset is after this time.",
         "icon": "mdi:clock-outline",
         "has_date": False,
-        "has_time": True},
+        "has_time": True,
+        "initialvalue": "22:00:00"},
         "offset_blinds_down_after_sunset": {
         "name": "Offset to add to sunset time.",
         "icon": "mdi:clock-outline",
         "has_date": False,
-        "has_time": True},
+        "has_time": True,
+        "initialvalue": "01:00:00"},
         "openblinds_on_time": {
         "name": "Time to open blinds",
         "icon": "mdi:clock-outline",
         "has_date": False,
-        "has_time": True},
+        "has_time": True,
+        "initialvalue": "08:00:00"},
         "closeblinds_on_time": {
         "name": "Time to close blinds",
         "icon": "mdi:clock-outline",
         "has_date": False,
-        "has_time": True}
+        "has_time": True,
+        "initialvalue": "22:00:00"}
     }
     variables_number = {"cooldown_night_blinds_position": {
         "name": "Position of blinds during cool down", "min": 0, "max": 100,
-        "step": 1, "icon": "mdi:blinds"}}
+        "step": 1, "icon": "mdi:blinds",
+        "initialvalue": 60}}
     variables_boolean_global = {"enable_global": {
         "name": "Enable automatic blinds control",
-        "icon": "mdi:blinds"},
+        "icon": "mdi:blinds",
+        "initialvalue": True},
         "enable_pd_global": {
         "name": "Control blinds only if nobody is home",
-        "icon": "mdi:account-multiple"},
+        "icon": "mdi:account-multiple",
+        "initialvalue": True},
         "enable_cooldown_during_night_global": {
         "name": "Openblinds during night to cool down",
-        "icon": "mdi:weather-night"},
+        "icon": "mdi:weather-night",
+        "initialvalue": False},
         "open_all_blinds_global": {
         "name": "Open ALL blinds",
-        "icon": "mdi:blinds"},
+        "icon": "mdi:blinds",
+        "initialvalue": False},
         "close_all_blinds_global": {
         "name": "Close ALL blinds",
-        "icon": "mdi:blinds"},
+        "icon": "mdi:blinds",
+        "initialvalue": False},
         "configuration": {
         "name": "Create new config templates"}
     }
@@ -1131,7 +1148,8 @@ class BlindsControlConfiguration(BaseClass):
             # start config creation
             if self.args["debug"]:
                 self._log_debug("input_boolean.control_blinds_configuration is None")
-            self.create_config_files()
+            #self.create_config_files()
+            self.initialize_configuration()
         else:
             if self.args["debug"]:
                 self._log_debug(
@@ -1144,8 +1162,67 @@ class BlindsControlConfiguration(BaseClass):
                 "input_boolean/turn_off",
                 entity_id="input_boolean.control_blinds_configuration")
             # run config creation
-            self.create_config_files()
+            #self.create_config_files()
+            self.initialize_configuration()
 
+    def initialize_configuration(self):
+        self._log_info("create_configuration")
+        statedict = self.get_state()
+        #idlist = list()
+        for entity in statedict:
+            if re.match('^cover.*', entity, re.IGNORECASE):
+                # detected cover
+                id_ = self._getid(statedict, entity)
+                #idlist.append(id_)
+                # create all required variables
+                # Name convention: <type>.control_blinds_<id>_<variable>
+                # Example Friendly_name
+                # input_boolean.control_blinds_<id>_use_pd_on_close
+                # input_boolean.control_blinds_<id>_openblinds
+                # input_boolean.control_blinds_<id>_closeblinds
+                # input_boolean.control_blinds_<id>_cooldown_during_night
+                # input_boolean.control_blinds_<id>_sunsetsunrise
+                # input_datetime.control_blinds_<id>_offset_blinds_up_weekend
+                # input_datetime.control_blinds_<id>_cooldown_during_night_open
+                # input_datetime.control_blinds_<id>_cooldown_during_night_close
+                # input_datetime.control_blinds_<id>_earliest_time_blinds_up
+                # input_datetime.control_blinds_<id>_latest_time_blinds_down
+                # input_datetime.control_blinds_<id>_offset_blinds_down_after_sunset
+                # input_datetime.control_blinds_<id>_openblinds
+                # input_datetime.control_blinds_<id>_closeblinds
+                # input_number.control_blinds_<id>_cooldown_night_blinds_position
+
+                idlist = list()
+
+                # create boolean variabels
+                res = self._createvariables(id_, "input_boolean",
+                                     self.variables_boolean)
+                idlist.extend(res)
+                res = self._createvariables(id_, "input_datetime",
+                                     self.variables_datetime)
+                idlist.extend(res)
+                res = self._createvariables(id_, "input_number",
+                                     self.variables_number)
+                idlist.extend(res)
+                self._createvariablegroup(idlist)
+        else:
+                if self.args["debug"]:
+                    self._log_debug("Entity %s does not match." % entity)
+
+        # add global variables
+        # input_boolean.control_blinds_enable_global
+        # input_boolean.control_blinds_enable_pd_global
+        # input_boolean.control_blinds_enable_cooldown_during_night_global
+        # input_boolean.control_blinds_open_all_blinds_global
+        # input_boolean.control_blinds_close_all_blinds_global
+
+        self._createvariables("global", "input_boolean",
+                             self.variables_boolean_global)
+        self._createconfiguration(
+            "global", {"input_boolean": self.variables_boolean_global})
+        idlist.append("global")
+        self._createconfigview(idlist, False)
+    
     def create_config_files(self):
         self._log_info("create_config_files")
         statedict = self.get_state()
@@ -1204,6 +1281,34 @@ class BlindsControlConfiguration(BaseClass):
             "global", {"input_boolean": self.variables_boolean_global}, False)
         idlist.append("global")
         self._writeconfigview(idlist, False)
+
+    def _createvariables(self, id_, variabletype, varlist):
+        if id_ is None:
+            id_ = ""
+        idlist = list()
+        for v in varlist:
+            elem = varlist.get(v)
+            for e in elem:
+                variableid = f"{variabletype}.control_blinds_{id_}_{v}"
+                cstate = self.get_state(variableid, attributes="all", default=None)
+                self._log_debug(f"Current state of {variableid}: {cstate}")                
+                if cstate is None:
+                    self._log_debug("Variable not set. Using inital state")
+                    state = e.get("initialvalue")
+                    attributes = e
+                else:
+                    state = None
+                    attributes = None
+                self._log_debug(f"Set state of {variableid} to {state} with attributes {attributes}")
+                #self.set_state(variableid, state=state, attributes=attributes)
+                idlist.append(variableid)
+        return idlist
+
+    def _createvariablegroup(self, id_, varlist):
+        variableid = f"group.control_blinds_{id_}"
+        entity_id = ','.join(elemlist)
+        self._log_debug(f"Set {variableid} attribute entity_id to {entity_id}")
+        #self.set_state(f"{variableid}", state="on", attributes={"entity_id": entity_id})
 
     def _writevariables(self, id_, filename, varlist, overwritefiles):
         if id_ is None:
