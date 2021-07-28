@@ -5,6 +5,18 @@ import re
 
 class BaseClass(hass.Hass):
 
+    def _init_filter(self):
+        self._filter_blacklist = None
+        if self.args.get("filter_blacklist", None) is not None and self.args.get("filter_blacklist")!="":
+            self._filter_blacklist=self.args.get("filter_blacklist")
+        self._log_debug(self._filter_blacklist)
+        self._log_debug(f"filter_blacklist: {self._filter_blacklist}")
+
+        self._filter_whitelist = None
+        if self.args.get("filter_whitelist", None) is not None and self.args.get("filter_whitelist")!="":
+            self._filter_whitelist=self.args.get("filter_whitelist")
+        self._log_debug(f"filter_whitelist: {self._filter_whitelist}")
+
     def _log_info(self, msg, prefix=None):
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
@@ -47,7 +59,7 @@ class BaseClass(hass.Hass):
             return None
 
     def _getid(self, statedict, entity):
-        idlist = ['id', 'value_id']
+        idlist = ['friendly_name', 'id', 'value_id']
         count = 0
         id = None
         while id is None and count < len(idlist):
@@ -89,3 +101,30 @@ class BaseClass(hass.Hass):
         finally:
             importedmodule = importlib.import_module(package)
         return importedmodule
+
+    def _get_state_filtered(self):
+        statedict = self.get_state()
+        filtered_statedict=dict()
+        for entity in statedict:
+            #filter by blacklist
+            blacklisted=True
+            if self._filter_blacklist is not None:
+                prepare="|".join(self._filter_blacklist)
+                blacklistregex=f"({prepare})"
+            else:
+                blacklistregex=""
+
+            #filter by whitelist
+            whitelisted=True
+            if self._filter_whitelist is not None:
+                prepare="|".join(self._filter_whitelist)
+                whitelistregex=f"({prepare})"
+            else:
+                whitelistregex=".*"
+
+            #apply filter
+            if not re.search(blacklistregex, entity, re.IGNORECASE) and re.search(whitelistregex, entity, re.IGNORECASE):
+                filtered_statedict.update({entity: statedict.get(entity)})
+
+        return filtered_statedict
+
