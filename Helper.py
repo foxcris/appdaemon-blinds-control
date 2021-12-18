@@ -1,19 +1,26 @@
 import inspect
 import appdaemon.plugins.hass.hassapi as hass
 import re
+import sys
 
 
 class BaseClass(hass.Hass):
+
+    def _log(self, msg):
+        if "appdaemontestframework" in sys.modules:
+            print(msg)
+        else:
+            self.log(msg)
 
     def _log_info(self, msg, prefix=None):
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
         callername = calframe[1][3]
         if prefix is not None and prefix != "":
-            self.log("%s: %s: %s: %s" %
+            self._log("%s: %s: %s: %s" %
                      (self.__class__.__name__, prefix, callername, msg))
         else:
-            self.log("%s: %s: %s" % (self.__class__.__name__, callername, msg))
+            self._log("%s: %s: %s" % (self.__class__.__name__, callername, msg))
 
     def _log_debug(self, msg, prefix=None):
         curframe = inspect.currentframe()
@@ -21,10 +28,10 @@ class BaseClass(hass.Hass):
         callername = calframe[1][3]
         if self.args["debug"]:
             if prefix is not None and prefix != "":
-                self.log("DEBUG: %s: %s: %s: %s" %
+                self._log("DEBUG: %s: %s: %s: %s" %
                          (self.__class__.__name__, prefix, callername, msg))
             else:
-                self.log("DEBUG: %s: %s: %s" %
+                self._log("DEBUG: %s: %s: %s" %
                          (self.__class__.__name__, callername, msg))
 
     def _log_error(self, msg, prefix=None):
@@ -32,10 +39,10 @@ class BaseClass(hass.Hass):
         calframe = inspect.getouterframes(curframe, 2)
         callername = calframe[1][3]
         if prefix is not None and prefix != "":
-            self.log("ERROR: %s: %s: %s: %s" %
+            self._log("ERROR: %s: %s: %s: %s" %
                      (self.__class__.__name__, prefix, callername, msg))
         else:
-            self.log("ERROR: %s: %s: %s" % (self.__class__.__name__, callername, msg))
+            self._log("ERROR: %s: %s: %s" % (self.__class__.__name__, callername, msg))
 
     def _getattribute(self, statedict, entity, atr):
         return statedict.get(entity).get("attributes").get(atr, None)
