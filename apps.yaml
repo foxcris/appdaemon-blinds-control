@@ -7,8 +7,14 @@ BlindsConfigConfiguration:
   module:                   BlindsControl
   class:                    BlindsControlConfiguration
   debug:                    True
+  filter_blacklist:
+    - parentsbedroom_switch
+    - guest_room_switch
 
 BlindsControl:
  module:                    BlindsControl
  class:                     BlindsControl
  debug:                     True
+ filter_blacklist:
+    - parentsbedroom_switch
+    - guest_room_switch

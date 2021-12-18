@@ -146,8 +146,6 @@ class TestBlindsControl:
         
         blindscontrol.cancel_timer = mock.MagicMock()
         blindscontrol._config_change_global('input_boolean.control_blinds_enable_global', 'state', 'on', 'off', {})
-
-        print(blindscontrol._coverdict)
         
         #now we check if all "old" handles have been canceled
         for handle in handlelist:

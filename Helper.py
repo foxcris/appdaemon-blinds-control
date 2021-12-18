@@ -113,16 +113,15 @@ class BaseClass(hass.Hass):
         statedict = self.get_state()
         filtered_statedict=dict()
         for entity in statedict:
+            self._log_debug(f"enitiy: {entity}")
             #filter by blacklist
-            blacklisted=True
             if self._filter_blacklist is not None:
                 prepare="|".join(self._filter_blacklist)
                 blacklistregex=f"({prepare})"
             else:
-                blacklistregex=""
+                blacklistregex=None
 
             #filter by whitelist
-            whitelisted=True
             if self._filter_whitelist is not None:
                 prepare="|".join(self._filter_whitelist)
                 whitelistregex=f"({prepare})"
@@ -130,7 +129,16 @@ class BaseClass(hass.Hass):
                 whitelistregex=".*"
 
             #apply filter
-            if not re.search(blacklistregex, entity, re.IGNORECASE) and re.search(whitelistregex, entity, re.IGNORECASE):
+            matchedblacklist=False
+            if blacklistregex is not None and re.search(blacklistregex, entity, re.IGNORECASE):
+                matchedblacklist=True
+            matchedwhitelist=False
+            if re.search(whitelistregex, entity, re.IGNORECASE):
+                matchedwhitelist=True
+            self._log_debug(f"Matched Blacklist: {matchedblacklist}")
+            self._log_debug(f"Matched Whitelist: {matchedwhitelist}")
+            if not matchedblacklist and matchedwhitelist:
+                self._log_debug(f"Add entity {entity} to filtered_statedict")
                 filtered_statedict.update({entity: statedict.get(entity)})
 
         return filtered_statedict
