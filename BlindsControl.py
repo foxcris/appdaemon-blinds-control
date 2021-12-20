@@ -3,7 +3,7 @@ import re
 import traceback
 from datetime import datetime, timedelta
 from threading import Semaphore
-from Helper import BaseClass
+from helper.Helper import BaseClass
 
 
 class BlindsControl(BaseClass):
