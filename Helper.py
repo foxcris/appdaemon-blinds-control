@@ -1,19 +1,38 @@
 import inspect
 import appdaemon.plugins.hass.hassapi as hass
 import re
+import sys
 
 
 class BaseClass(hass.Hass):
+
+    def _log(self, msg):
+        if "appdaemontestframework" in sys.modules:
+            print(msg)
+        else:
+            self.log(msg)
+
+    def _init_filter(self):
+        self._filter_blacklist = None
+        if self.args.get("filter_blacklist", None) is not None and self.args.get("filter_blacklist")!="":
+            self._filter_blacklist=self.args.get("filter_blacklist")
+        self._log_debug(self._filter_blacklist)
+        self._log_debug(f"filter_blacklist: {self._filter_blacklist}")
+
+        self._filter_whitelist = None
+        if self.args.get("filter_whitelist", None) is not None and self.args.get("filter_whitelist")!="":
+            self._filter_whitelist=self.args.get("filter_whitelist")
+        self._log_debug(f"filter_whitelist: {self._filter_whitelist}")
 
     def _log_info(self, msg, prefix=None):
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
         callername = calframe[1][3]
         if prefix is not None and prefix != "":
-            self.log("%s: %s: %s: %s" %
+            self._log("%s: %s: %s: %s" %
                      (self.__class__.__name__, prefix, callername, msg))
         else:
-            self.log("%s: %s: %s" % (self.__class__.__name__, callername, msg))
+            self._log("%s: %s: %s" % (self.__class__.__name__, callername, msg))
 
     def _log_debug(self, msg, prefix=None):
         curframe = inspect.currentframe()
@@ -21,10 +40,10 @@ class BaseClass(hass.Hass):
         callername = calframe[1][3]
         if self.args["debug"]:
             if prefix is not None and prefix != "":
-                self.log("DEBUG: %s: %s: %s: %s" %
+                self._log("DEBUG: %s: %s: %s: %s" %
                          (self.__class__.__name__, prefix, callername, msg))
             else:
-                self.log("DEBUG: %s: %s: %s" %
+                self._log("DEBUG: %s: %s: %s" %
                          (self.__class__.__name__, callername, msg))
 
     def _log_error(self, msg, prefix=None):
@@ -32,10 +51,10 @@ class BaseClass(hass.Hass):
         calframe = inspect.getouterframes(curframe, 2)
         callername = calframe[1][3]
         if prefix is not None and prefix != "":
-            self.log("ERROR: %s: %s: %s: %s" %
+            self._log("ERROR: %s: %s: %s: %s" %
                      (self.__class__.__name__, prefix, callername, msg))
         else:
-            self.log("ERROR: %s: %s: %s" % (self.__class__.__name__, callername, msg))
+            self._log("ERROR: %s: %s: %s" % (self.__class__.__name__, callername, msg))
 
     def _getattribute(self, statedict, entity, atr):
         return statedict.get(entity).get("attributes").get(atr, None)
@@ -89,3 +108,38 @@ class BaseClass(hass.Hass):
         finally:
             importedmodule = importlib.import_module(package)
         return importedmodule
+
+    def _get_state_filtered(self):
+        statedict = self.get_state()
+        filtered_statedict=dict()
+        for entity in statedict:
+            self._log_debug(f"enitiy: {entity}")
+            #filter by blacklist
+            if self._filter_blacklist is not None:
+                prepare="|".join(self._filter_blacklist)
+                blacklistregex=f"({prepare})"
+            else:
+                blacklistregex=None
+
+            #filter by whitelist
+            if self._filter_whitelist is not None:
+                prepare="|".join(self._filter_whitelist)
+                whitelistregex=f"({prepare})"
+            else:
+                whitelistregex=".*"
+
+            #apply filter
+            matchedblacklist=False
+            if blacklistregex is not None and re.search(blacklistregex, entity, re.IGNORECASE):
+                matchedblacklist=True
+            matchedwhitelist=False
+            if re.search(whitelistregex, entity, re.IGNORECASE):
+                matchedwhitelist=True
+            self._log_debug(f"Matched Blacklist: {matchedblacklist}")
+            self._log_debug(f"Matched Whitelist: {matchedwhitelist}")
+            if not matchedblacklist and matchedwhitelist:
+                self._log_debug(f"Add entity {entity} to filtered_statedict")
+                filtered_statedict.update({entity: statedict.get(entity)})
+
+        return filtered_statedict
+

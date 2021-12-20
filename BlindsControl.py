@@ -10,14 +10,15 @@ class BlindsControl(BaseClass):
 
     def initialize(self):
         self._lock = Semaphore(1)
+        self._version = 1.1
+        self._init_filter()
         # run over all covers an check if configurations are available
         # then start the spcific handlers for each covers
-        statedict = self.get_state()
+        statedict = self._get_state_filtered()
         self._coverdict = dict()
         changeduration = 10
         for entity in statedict:
             if re.match('^cover.*', entity, re.IGNORECASE):
-                # self._log(entity)
                 # detected cover
                 id_ = self._getid(statedict, entity)
                 self._log_debug(id_)
@@ -194,6 +195,7 @@ class BlindsControl(BaseClass):
         if entity in require_reset:
             #disable all handles
             for cover in self._get_coverlist():
+                self._log_debug("Reset required. Disable all handles")
                 self._config_change(entity, None, old, new, {'entityid': cover})
 
     def _config_change(self, entity, attribute, old, new, kwargs):
@@ -204,7 +206,7 @@ class BlindsControl(BaseClass):
             # cancel and create new open blinds handle
             ob_handle = self._get_handle(entityid, 'ob_handle')
             if ob_handle is not None:
-                self._log_debug("Cancel timer ob_handle")
+                self._log_debug(f"Cancel timer ob_handle {ob_handle}")
                 self.cancel_timer(ob_handle)
                 ob_handle = None
             if (self.get_state(
@@ -239,7 +241,7 @@ class BlindsControl(BaseClass):
             # create close blinds handle
             cb_handle = self._get_handle(entityid, 'cb_handle')
             if cb_handle is not None:
-                self._log_debug("Cancel timer cb_handle")
+                self._log_debug(f"Cancel timer cb_handle {cb_handle}")
                 self.cancel_timer(cb_handle)
                 cb_handle = None
             if (self.get_state(
@@ -273,11 +275,11 @@ class BlindsControl(BaseClass):
             obcd_handle = self._get_handle(entityid, 'obcd_handle')
             cbcd_handle = self._get_handle(entityid, 'cbcd_handle')
             if obcd_handle is not None:
-                self._log_debug("Cancel timer obcd_handle")
+                self._log_debug(f"Cancel timer obcd_handle {obcd_handle}")
                 self.cancel_timer(obcd_handle)
                 obcd_handle = None
             if cbcd_handle is not None:
-                self._log_debug("Cancel timer cbcd_handle")
+                self._log_debug(f"Cancel timer cbcd_handle {cbcd_handle}")
                 self.cancel_timer(cbcd_handle)
                 cbcd_handle = None
             self._log_debug("input_boolean.control_blinds_%s_cooldown_during_night" % entityid)
@@ -802,11 +804,13 @@ class BlindsControl(BaseClass):
         self._log_debug("Offset Blinds Up Weekend %s" %
                         sunrise_buw_offset, prefix=entityid)
         # Sonnenaufgang pruefen
+        # Sunsrise time is in localtime but the time object is NOT timezone aware!
         sunrise = self.sunrise()
         sunriseday = sunrise.replace(
             hour=0, minute=0, second=0, microsecond=0)
         self._log_debug("Sunriseday: %s" % sunriseday, prefix=entityid)
         self._log_debug("Sunrise: %s" % sunrise, prefix=entityid)
+        # get the current day without hours and minutes
         today = datetime.now().replace(
             hour=0, minute=0, second=0, microsecond=0)
         self._log_debug("Today: %s" % today, prefix=entityid)
@@ -818,6 +822,7 @@ class BlindsControl(BaseClass):
             minutes=etbus_dtime.minute,
             seconds=etbus_dtime.second)
         self._log_debug("etbus: %s" % etbus, prefix=entityid)
+        # earliesttimeup is in local time but not timezone ware!
         earliesttimeup = today + etbus
         self._log_debug("Earliesttimeup: %s" %
                         earliesttimeup, prefix=entityid)
@@ -874,6 +879,12 @@ class BlindsControl(BaseClass):
                     nexttrigger, entityid=entityid))
 
     def _open_blinds_time(self, entityid):
+        offset_blinds_up_weekend_dtime = datetime.strptime("%s" % self.get_state(
+            "input_datetime.control_blinds_%s_offset_blinds_up_weekend" %
+            entityid), "%H:%M:%S")
+        offset_blinds_up_weekend = timedelta(hours=offset_blinds_up_weekend_dtime.hour,
+                                       minutes=offset_blinds_up_weekend_dtime.minute,
+                                       seconds=offset_blinds_up_weekend_dtime.second)
         today = datetime.now().replace(
             hour=0, minute=0, second=0, microsecond=0)
         self._log_debug("open_blinds_time: Today: %s" % today, prefix=entityid)
@@ -888,6 +899,21 @@ class BlindsControl(BaseClass):
             attribute="second"))
         self._log_debug("open_blinds_time: tbu: %s" % tbu, prefix=entityid)
         timeup = today + tbu
+        # get the current day without hours and minutes
+        today = datetime.now().replace(
+            hour=0, minute=0, second=0, microsecond=0)
+        self._log_debug("Today: %s" % today, prefix=entityid)
+        
+        if self.get_state("binary_sensor.workday_sensor") == "off":
+            # kein werktag. offset anwenden
+            timeup += offset_blinds_up_weekend
+            self._log_debug("Offset Blinds Up Weekend %s" %
+                            offset_blinds_up_weekend, prefix=entityid)
+            self._log_debug(
+                "Weekend detected. Add offeset to time up.\
+                New time up: %s" % timeup,
+                prefix=entityid)  
+        
         self._log_debug("open_blinds_time: timeup: %s" %
                         timeup, prefix=entityid)
         if timeup < datetime.now():
@@ -902,7 +928,7 @@ class BlindsControl(BaseClass):
                 today + timedelta(days=1, minutes=5),
                 entityid=entityid))
         else:
-            # timedown ist in der Zukunft. Trigger zum schließen starten
+            # timeup ist in der Zukunft. Trigger zum schließen starten
             self._log_info(
                 "open_blinds_time: timeup is in the future %s" % timeup,
                 prefix=entityid)
@@ -1046,13 +1072,11 @@ class BlindsControlConfiguration(BaseClass):
                                          "icon": "mdi:blinds"},
                          "cooldown_during_night": {"name": "Openblinds during\
                                                    night to cool down",
-                                                   "icon": "mdi:weather-night"
-                                                   },
+                                                   "icon": "mdi:weather-night"},
                          "sunsetsunrise": {"name":
                                            "Control blinds according to\
                                            sunrise/sunset",
-                                           "icon": "mdi:white-balance-sunny"
-                                           },
+                                           "icon": "mdi:white-balance-sunny"},
                          }
     variables_datetime = {"offset_blinds_up_weekend": {
         "name": "Offset for open blinds at Weekends",
@@ -1121,23 +1145,16 @@ class BlindsControlConfiguration(BaseClass):
 
     def initialize(self):
         self._lock = Semaphore(1)
+        self._init_filter()
         self.cfg_handle = self.listen_state(
             self.update_config_files,
             "input_boolean.control_blinds_configuration", duration=10)
 
-        if self.get_state(
-                "input_boolean.control_blinds_configuration") is None:
-            # variable does not exit, config is created for the first time
-            # start config creation
-            if self.args["debug"]:
-                self._log_debug("input_boolean.control_blinds_configuration is None")
-            self.create_config_files()
-        else:
-            if self.args["debug"]:
-                self._log_debug(
-                    "input_boolean.control_blinds_configuration is not None")
+        self.create_config_files()
+        #self.initialize_configuration()
 
     def update_config_files(self, entity, attribute, old, new, duration):
+        self._log_debug(f"entity: {entity}, attribute: {attribute}, old: {old}, new: {new}, duration: {duration}")
         if new:
             # deactivate boolean
             self.call_service(
@@ -1148,7 +1165,7 @@ class BlindsControlConfiguration(BaseClass):
 
     def create_config_files(self):
         self._log_info("create_config_files")
-        statedict = self.get_state()
+        statedict = self._get_state_filtered()
         overwritefiles = True
         idlist = list()
         for entity in statedict:
@@ -1221,7 +1238,10 @@ class BlindsControlConfiguration(BaseClass):
                 fileout.write("control_blinds_%s:\n" % v)
             elem = varlist.get(v)
             for e in elem:
-                fileout.write("  %s: %s\n" % (e, elem.get(e)))
+                value = elem.get(e)
+                if type(value)==str:
+                    value = ' '.join(value.split())
+                fileout.write("  %s: %s\n" % (e, value))
         fileout.write("##End## %s\n\n" % id_)
         fileout.close()
 
@@ -1236,7 +1256,6 @@ class BlindsControlConfiguration(BaseClass):
         fileout.write("##Start## %s\n" % id_)
         fileout.write("config_blinds_%s:\n" % id_)
         fileout.write("  name: Config Blinds %s\n" % id_)
-        fileout.write("  view: no\n")
         fileout.write("  entities:\n")
         for k in vardict:
             varlist = vardict.get(k)
@@ -1258,7 +1277,6 @@ class BlindsControlConfiguration(BaseClass):
         fileout.write("##Start## config_blinds\n")
         fileout.write("config_blinds:\n")
         fileout.write("  name: Config Blinds\n")
-        fileout.write("  view: yes\n")
         fileout.write("  entities:\n")
         for id_ in idlist:
             fileout.write("    - group.config_blinds_%s\n" % id_)

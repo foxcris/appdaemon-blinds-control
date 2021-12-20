@@ -5,7 +5,7 @@ from BlindsControl import BlindsControl, BlindsControlConfiguration, GlobalBlind
 import logging
 from unittest.mock import ANY
 from freezegun import freeze_time
-
+import uuid
 
 class TestBlindsControl:
 
@@ -13,15 +13,15 @@ class TestBlindsControl:
     @freeze_time("2019-10-16 00:02:02", tz_offset=2)
     def blindscontrol(self, given_that):
         blindscontrol = BlindsControl(
-            None, BlindsControl.__name__, None, None, None, None, None, None)
+            None, BlindsControl.__name__, None, None, None, None, None)
         blindscontrolconfig = BlindsControlConfiguration(
-            None, BlindsControlConfiguration.__name__, None, None, None, None, None, None)
+            None, BlindsControlConfiguration.__name__, None, None, None, None, None)
 
         # Set initial state
         coverlist = ['living_room', 'guest_room', 'parents_room', 'kids_room']
         for cover in coverlist:
             given_that.state_of(f"cover.{cover}").is_set_to(
-                "closed", {'friendly_name': f"{cover}", 'current_position': 0})
+                "closed", {'friendly_name': f"{cover}", 'current_position': 0, 'value_id': cover})
             for varbool in blindscontrolconfig.variables_boolean:
                 print(f"input_boolean.control_blinds_{cover}_{varbool}")
                 given_that.state_of(
@@ -63,7 +63,7 @@ class TestBlindsControl:
         caplog.set_level(logging.DEBUG)
         
         blindscontrolconfig = BlindsControlConfiguration(
-            None, BlindsControlConfiguration.__name__, None, None, None, None, None, None)
+            None, BlindsControlConfiguration.__name__, None, None, None, None, None)
 
         #set inital state of variables
         coverlist = ['living_room', 'guest_room', 'parents_room', 'kids_room']
@@ -84,7 +84,7 @@ class TestBlindsControl:
         # Watch alle config variables for changes
         for cover in coverlist:
             given_that.state_of(f"cover.{cover}").is_set_to(
-                "closed", {'friendly_name': f"{cover}", 'current_position': 0})
+                "closed", {'friendly_name': f"{cover}", 'current_position': 0, 'value_id': cover})
             for varbool in blindscontrolconfig.variables_boolean:
                 assert_that(blindscontrol).listens_to.state(f"input_boolean.control_blinds_{cover}_{varbool}", entityid=f"{cover}", duration=10) \
                 .with_callback(blindscontrol._config_change)
@@ -113,8 +113,8 @@ class TestBlindsControl:
     @freeze_time("2019-10-16 12:32:02", tz_offset=2)
     def test_initialize_control_blinds_enable_global_off(self, given_that, blindscontrol, assert_that, caplog, time_travel):
         caplog.set_level(logging.DEBUG)
-        blindscontrolconfig = BlindsControlConfiguration(
-            None, BlindsControlConfiguration.__name__, None, None, None, None, None, None)
+        #blindscontrolconfig = BlindsControlConfiguration(
+        #    None, BlindsControlConfiguration.__name__, None, None, None, None, None)
         
         #set inital state of variables
         coverlist = ['living_room', 'guest_room', 'parents_room', 'kids_room']
@@ -143,14 +143,14 @@ class TestBlindsControl:
             handlelist.append(blindscontrol._get_handle(cover, 'ob_handle'))
             handlelist.append(blindscontrol._get_handle(cover, 'obcd_handle'))
             handlelist.append(blindscontrol._get_handle(cover, 'cbcd_handle'))
-            
+        
+        blindscontrol.cancel_timer = mock.MagicMock()
         blindscontrol._config_change_global('input_boolean.control_blinds_enable_global', 'state', 'on', 'off', {})
-
-        print(blindscontrol._coverdict)
         
         #now we check if all "old" handles have been canceled
         for handle in handlelist:
-            blindscontrol.cancel_timer.assert_any_call(handle)
+            #blindscontrol.cancel_timer.assert_any_call(handle)
+            blindscontrol.cancel_timer.called_with(handle)
 
         #check if handles are created
         for cover in coverlist:
@@ -770,7 +770,7 @@ class TestBlindsControl:
         given_that.state_of(
             f'input_boolean.control_blinds_enable_pd_global').is_set_to("off")
         given_that.state_of(f"cover.{cover}").is_set_to(
-            "open", {'friendly_name': f"{cover}", 'current_position': 100})
+            "open", {'friendly_name': f"{cover}", 'current_position': 100, 'value_id': cover})
 
         # Person 'Parent' is hat home
         given_that.state_of('person.jondoe').is_set_to(
@@ -796,7 +796,7 @@ class TestBlindsControl:
         given_that.state_of(
             f'input_boolean.control_blinds_enable_pd_global').is_set_to("on")
         given_that.state_of(f"cover.{cover}").is_set_to(
-            "open", {'friendly_name': f"{cover}", 'current_position': 100})
+            "open", {'friendly_name': f"{cover}", 'current_position': 100, 'value_id': cover})
 
         # Person 'Parent' is hat home
         given_that.state_of('person.jondoe').is_set_to(
@@ -826,7 +826,7 @@ class TestBlindsControl:
         given_that.state_of(
             f'input_boolean.control_blinds_enable_pd_global').is_set_to("on")
         given_that.state_of(f"cover.{cover}").is_set_to(
-            "open", {'friendly_name': f"{cover}", 'current_position': 100})
+            "open", {'friendly_name': f"{cover}", 'current_position': 100, 'value_id': cover})
 
         # Person 'Parent' is hat home
         given_that.state_of('person.jondoe').is_set_to(
@@ -856,7 +856,7 @@ class TestBlindsControl:
         given_that.state_of(
             f'input_boolean.control_blinds_enable_pd_global').is_set_to("off")
         given_that.state_of(f"cover.{cover}").is_set_to(
-            "open", {'friendly_name': f"{cover}", 'current_position': 100})
+            "open", {'friendly_name': f"{cover}", 'current_position': 100, 'value_id': cover})
 
         # Person 'Parent' is hat home
         given_that.state_of('person.jondoe').is_set_to(
@@ -882,7 +882,7 @@ class TestBlindsControl:
         given_that.state_of(
             f'input_boolean.control_blinds_enable_pd_global').is_set_to("on")
         given_that.state_of(f"cover.{cover}").is_set_to(
-            "open", {'friendly_name': f"{cover}", 'current_position': 100})
+            "open", {'friendly_name': f"{cover}", 'current_position': 100, 'value_id': cover})
 
         # Person 'Parent' is hat home
         given_that.state_of('person.jondoe').is_set_to(
@@ -908,7 +908,7 @@ class TestBlindsControl:
         given_that.state_of(
             f'input_boolean.control_blinds_enable_pd_global').is_set_to("on")
         given_that.state_of(f"cover.{cover}").is_set_to(
-            "open", {'friendly_name': f"{cover}", 'current_position': 100})
+            "open", {'friendly_name': f"{cover}", 'current_position': 100, 'value_id': cover})
 
         # Person 'Parent' is hat home
         given_that.state_of('person.jondoe').is_set_to(
@@ -1242,6 +1242,37 @@ class TestBlindsControl:
             .with_callback(blindscontrol._open_blinds)
 
     @freeze_time("2019-10-16 05:02:02", tz_offset=2)
+    # _open_blinds_time
+    # Fall3: timeup >= datetime.now() but its weekend!; -> self._open_blinds, timeup
+    def test_open_blinds_time_case3(self, given_that, blindscontrol, assert_that, caplog):
+        caplog.set_level(logging.DEBUG)
+        cover = 'living_room'
+
+        # set time for the test
+        today = datetime.now().replace(
+            hour=0, minute=0, second=0, microsecond=0)
+                
+        given_that.state_of(f"binary_sensor.workday_sensor").is_set_to("off")
+        given_that.state_of(f"input_datetime.control_blinds_{cover}_offset_blinds_up_weekend").is_set_to("02:00:00")
+
+        # set time to open blinds
+        openblinds_on_time = today + \
+            timedelta(hours=7, minutes=30, seconds=0)
+        given_that.state_of(f'input_datetime.control_blinds_{cover}_openblinds_on_time').is_set_to(openblinds_on_time, {
+            "hour": openblinds_on_time.hour, "minute": openblinds_on_time.minute, "second": openblinds_on_time.second})
+                
+        #set offset to 2 hours
+        weekend_offset = timedelta(hours=2, minutes=0, seconds=0)
+            
+        #timeup + offset
+        new_openblinds_on_time = openblinds_on_time + weekend_offset
+        
+        blindscontrol._open_blinds_time(entityid=cover)
+        assert_that(blindscontrol) \
+            .registered.run_at(new_openblinds_on_time, entityid=cover) \
+            .with_callback(blindscontrol._open_blinds)
+
+    @freeze_time("2019-10-16 05:02:02", tz_offset=2)
     # _open_blinds
     # Fall1: current_position<100; -> cover/open_cover -> self._choose_open_blinds_method, datetime.now() + timedelta(minutes=5)
     def test__open_blinds_case1(self, given_that, blindscontrol, assert_that, caplog):
@@ -1263,7 +1294,7 @@ class TestBlindsControl:
         cover = 'living_room'
 
         given_that.state_of(f"cover.{cover}").is_set_to(
-            "open", {'friendly_name': f"{cover}", 'current_position': 100})
+            "open", {'friendly_name': f"{cover}", 'current_position': 100, 'value_id': cover})
 
         blindscontrol._open_blinds({"entityid": cover})
         assert_that(blindscontrol) \
@@ -1292,7 +1323,7 @@ class TestBlindsControl:
         cover = 'living_room'
 
         given_that.state_of(f"cover.{cover}").is_set_to(
-            "open", {'friendly_name': f"{cover}", 'current_position': 100})
+            "open", {'friendly_name': f"{cover}", 'current_position': 100, 'value_id': cover})
 
         blindscontrol._open_blinds_cooldown_({"entityid": cover})
         assert_that(blindscontrol) \
@@ -1305,7 +1336,7 @@ class TestGlobalBlindsControl:
     @freeze_time("2019-10-16 00:02:02", tz_offset=2)
     def globalblindscontrol(self, given_that):
         globalblindscontrol = GlobalBlindsControl(
-            None, GlobalBlindsControl.__name__, None, None, None, None, None, None)
+            None, GlobalBlindsControl.__name__, None, None, None, None, None)
 
         # set namespace
         globalblindscontrol.set_namespace(None)
@@ -1321,7 +1352,6 @@ class TestGlobalBlindsControl:
     # _open_blinds
     def test__open_blinds(self, given_that, globalblindscontrol, assert_that, caplog):
         caplog.set_level(logging.DEBUG)
-        cover = 'living_room'
         entity="input_boolean.control_blinds_open_all_blinds_global"
 
         globalblindscontrol._open_blinds(entity, None, "off", "on", 1)
@@ -1334,7 +1364,6 @@ class TestGlobalBlindsControl:
     # _close_blinds
     def test__close_blinds(self, given_that, globalblindscontrol, assert_that, caplog):
         caplog.set_level(logging.DEBUG)
-        cover = 'living_room'
         entity="input_boolean.control_blinds_close_all_blinds_global"
 
         globalblindscontrol._close_blinds(entity, None, "off", "on", 1)
