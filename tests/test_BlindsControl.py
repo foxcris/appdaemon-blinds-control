@@ -363,40 +363,40 @@ class TestBlindsControl:
             .registered.run_at(today + timedelta(days=1, minutes=5), entityid=cover) \
             .with_callback(blindscontrol._close_blinds_cooldown)
 
-    # Cooldown during night
-    # close blinds
-    # time for close cover is after normal time to open cover
-    # time to close cover is in the future
-    # -> recheck in 5 minutes
-    @freeze_time("2019-10-16 07:02:02", tz_offset=2)
-    def test_close_blinds_cooldown_wrong_config(self, given_that, blindscontrol, assert_that, caplog):
-        caplog.set_level(logging.DEBUG)
-        cover = 'living_room'
+    # # Cooldown during night
+    # # close blinds
+    # # time for close cover is after normal time to open cover
+    # # time to close cover is in the future
+    # # -> recheck in 5 minutes
+    # @freeze_time("2019-10-16 07:02:02", tz_offset=2)
+    # def test_close_blinds_cooldown_wrong_config(self, given_that, blindscontrol, assert_that, caplog):
+    #     caplog.set_level(logging.DEBUG)
+    #     cover = 'living_room'
 
-        # set time for the test
-        today = datetime.now().replace(
-            hour=0, minute=0, second=0, microsecond=0)
+    #     # set time for the test
+    #     today = datetime.now().replace(
+    #         hour=0, minute=0, second=0, microsecond=0)
 
-        # now the real test can start
-        given_that.state_of(
-            f'input_boolean.control_blinds_{cover}_cooldown_during_night').is_set_to("on")
-        given_that.state_of(
-            f'input_boolean.control_blinds_enable_cooldown_during_night_global').is_set_to("on")
-        given_that.state_of(
-            f'input_boolean.control_blinds_enable_global').is_set_to("on")
-        given_that.state_of(
-            f'input_boolean.control_blinds_{cover}_openblinds').is_set_to("on")
-        time_cooldown_during_night_close = today + timedelta(hours=10)
-        given_that.state_of(f'input_datetime.control_blinds_{cover}_cooldown_during_night_close').is_set_to(time_cooldown_during_night_close, {
-            "hour": time_cooldown_during_night_close.hour, "minute": time_cooldown_during_night_close.minute, "second": time_cooldown_during_night_close.second})
-        blindscontrol._set_variable(
-            cover, "time_open_blinds", today + timedelta(hours=5))
+    #     # now the real test can start
+    #     given_that.state_of(
+    #         f'input_boolean.control_blinds_{cover}_cooldown_during_night').is_set_to("on")
+    #     given_that.state_of(
+    #         f'input_boolean.control_blinds_enable_cooldown_during_night_global').is_set_to("on")
+    #     given_that.state_of(
+    #         f'input_boolean.control_blinds_enable_global').is_set_to("on")
+    #     given_that.state_of(
+    #         f'input_boolean.control_blinds_{cover}_openblinds').is_set_to("on")
+    #     time_cooldown_during_night_close = today + timedelta(hours=10)
+    #     given_that.state_of(f'input_datetime.control_blinds_{cover}_cooldown_during_night_close').is_set_to(time_cooldown_during_night_close, {
+    #         "hour": time_cooldown_during_night_close.hour, "minute": time_cooldown_during_night_close.minute, "second": time_cooldown_during_night_close.second})
+    #     blindscontrol._set_variable(
+    #         cover, "time_open_blinds", today + timedelta(hours=5))
 
-        blindscontrol._close_blinds_cooldown({"entityid": cover})
-        # erneut in 5min prüfen
-        assert_that(blindscontrol) \
-            .registered.run_at(datetime.now() + timedelta(minutes=5), entityid=cover) \
-            .with_callback(blindscontrol._close_blinds_cooldown)
+    #     blindscontrol._close_blinds_cooldown({"entityid": cover})
+    #     # erneut in 5min prüfen
+    #     assert_that(blindscontrol) \
+    #         .registered.run_at(datetime.now() + timedelta(minutes=5), entityid=cover) \
+    #         .with_callback(blindscontrol._close_blinds_cooldown)
 
     # Cooldown during night
     # open blinds
@@ -503,39 +503,39 @@ class TestBlindsControl:
             .registered.run_at(today + timedelta(days=1, minutes=5), entityid=cover) \
             .with_callback(blindscontrol._open_blinds_cooldown)
 
-    # Cooldown during night
-    # open blinds
-    # time for open cover is befor normal time to close cover
-    # time to open cover is in the future
-    # recheck in 5 min
-    @freeze_time("2019-10-16 16:02:02", tz_offset=2)
-    def test_open_blinds_cooldown_wrong_config(self, given_that, blindscontrol, assert_that, caplog):
-        caplog.set_level(logging.DEBUG)
-        cover = 'living_room'
+    # # Cooldown during night
+    # # open blinds
+    # # time for open cover is befor normal time to close cover
+    # # time to open cover is in the future
+    # # recheck in 5 min
+    # @freeze_time("2019-10-16 16:02:02", tz_offset=2)
+    # def test_open_blinds_cooldown_wrong_config(self, given_that, blindscontrol, assert_that, caplog):
+    #     caplog.set_level(logging.DEBUG)
+    #     cover = 'living_room'
 
-        # set time for the test
-        today = datetime.now().replace(
-            hour=0, minute=0, second=0, microsecond=0)
+    #     # set time for the test
+    #     today = datetime.now().replace(
+    #         hour=0, minute=0, second=0, microsecond=0)
 
-        # now the real test can start
-        given_that.state_of(
-            f'input_boolean.control_blinds_{cover}_cooldown_during_night').is_set_to("on")
-        given_that.state_of(
-            f'input_boolean.control_blinds_enable_cooldown_during_night_global').is_set_to("on")
-        given_that.state_of(
-            f'input_boolean.control_blinds_enable_global').is_set_to("on")
-        given_that.state_of(
-            f'input_boolean.control_blinds_{cover}_closeblinds').is_set_to("on")
-        time_cooldown_during_night_open = today + timedelta(hours=19)
-        given_that.state_of(f'input_datetime.control_blinds_{cover}_cooldown_during_night_open').is_set_to(time_cooldown_during_night_open, {
-            "hour": time_cooldown_during_night_open.hour, "minute": time_cooldown_during_night_open.minute, "second": time_cooldown_during_night_open.second})
-        blindscontrol._set_variable(
-            cover, "time_close_blinds", today + timedelta(hours=20))
+    #     # now the real test can start
+    #     given_that.state_of(
+    #         f'input_boolean.control_blinds_{cover}_cooldown_during_night').is_set_to("on")
+    #     given_that.state_of(
+    #         f'input_boolean.control_blinds_enable_cooldown_during_night_global').is_set_to("on")
+    #     given_that.state_of(
+    #         f'input_boolean.control_blinds_enable_global').is_set_to("on")
+    #     given_that.state_of(
+    #         f'input_boolean.control_blinds_{cover}_closeblinds').is_set_to("on")
+    #     time_cooldown_during_night_open = today + timedelta(hours=19)
+    #     given_that.state_of(f'input_datetime.control_blinds_{cover}_cooldown_during_night_open').is_set_to(time_cooldown_during_night_open, {
+    #         "hour": time_cooldown_during_night_open.hour, "minute": time_cooldown_during_night_open.minute, "second": time_cooldown_during_night_open.second})
+    #     blindscontrol._set_variable(
+    #         cover, "time_close_blinds", today + timedelta(hours=20))
 
-        blindscontrol._open_blinds_cooldown({"entityid": cover})
-        assert_that(blindscontrol) \
-            .registered.run_at(datetime.now() + timedelta(minutes=5), entityid=cover) \
-            .with_callback(blindscontrol._open_blinds_cooldown)
+    #     blindscontrol._open_blinds_cooldown({"entityid": cover})
+    #     assert_that(blindscontrol) \
+    #         .registered.run_at(datetime.now() + timedelta(minutes=5), entityid=cover) \
+    #         .with_callback(blindscontrol._open_blinds_cooldown)
 
     @freeze_time("2019-10-16 21:02:02", tz_offset=2)
     # Sunsetday is current day
